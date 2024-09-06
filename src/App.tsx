@@ -35,7 +35,7 @@ const App: Component = () => {
       
       <main class="flex-1">
         {/* <div class="flex flex-row flex-wrap justify-evenly"> */}
-        <div class="grid grid-cols-4">
+        <div class="grid sticky-grid">
           <For each={notes}>
             {(item, index) => (
               <NoteCard title={item.title} body={item.body} arrayIndex={index()} />
