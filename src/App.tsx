@@ -18,7 +18,6 @@ const App: Component = () => {
   }
  
   const saveNewNote = () => {
-    //setNotes([...notes, {title: "Added Card", body: "This card was just added!"}])
     if (formReadyToSubmit()) {
       setNotes(notes.length, {title: newTitle(), body: newBody()});
       setNewTitle("");
@@ -34,7 +33,6 @@ const App: Component = () => {
       </header>
       
       <main class="flex-1">
-        {/* <div class="flex flex-row flex-wrap justify-evenly"> */}
         <div class="grid sticky-grid">
           <For each={notes}>
             {(item, index) => (
@@ -78,7 +76,6 @@ const App: Component = () => {
           </form>
         </div>
       </Show>
-        {/* <span class="material-symbols-outlined md-12 cursor-pointer justify-center rounded-md h-px hover:bg-neutral-900 hover:text-white">add_circle</span> */}
       </footer>
     </>
   );

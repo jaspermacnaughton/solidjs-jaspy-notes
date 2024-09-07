@@ -1,12 +1,10 @@
 import type { Component, JSXElement } from 'solid-js';
 import { useJaspyNotesContext } from '../context/JaspyNotesContext';
-import { produce } from 'solid-js/store';
 
 type NoteCardProps = {
   title: string,
   body: string,
   arrayIndex: number;
-  //children: JSXElement
 }
 
 const NoteCard: Component<NoteCardProps> = (props) => {
@@ -14,15 +12,8 @@ const NoteCard: Component<NoteCardProps> = (props) => {
   const { notes, setNotes } = useJaspyNotesContext(); //TODO: can we pass this to the parent instead?
   
   const deleteNote = () => {
-    console.log("deleting note");
-    
     setNotes([...notes.slice(0, props.arrayIndex), ...notes.slice(props.arrayIndex + 1)]);
     
-    // setNotes((prevNotes) => {
-    //   const newNotes = [...prevNotes];
-    //   newNotes.splice(props.arrayIndex, props.arrayIndex);
-    //   return newNotes;
-    // });
   }
   
   return (
@@ -39,7 +30,6 @@ const NoteCard: Component<NoteCardProps> = (props) => {
       <hr class="mb-2" />
       
       <p>{props.body}</p>
-      {/* {props.children} */}
     </div>
   );
 };
