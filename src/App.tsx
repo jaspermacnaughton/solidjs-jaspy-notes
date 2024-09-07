@@ -48,7 +48,7 @@ const App: Component = () => {
         fallback={<button class="w-12 h-12 m-4 p-0 btn text-xlg items-center justify-center" onClick={beginNewNote}>+</button>}
       >
         
-        <div class="bg-white rounded-md shadow-md float-right w-1/4">
+        <div class="bg-white rounded-md shadow-md float-right min-w-80 w-1/4">
           <form onSubmit={saveNewNote} class="flex flex-col">
             <h3 class="text-center m-2 text-xl"><b>New Note</b></h3>
             
