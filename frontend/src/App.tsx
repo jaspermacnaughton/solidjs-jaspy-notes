@@ -1,6 +1,12 @@
-import { createSignal, For, Show, type Component } from 'solid-js';
+import { createResource, createSignal, For, Match, Show, Suspense, Switch, type Component } from 'solid-js';
 import NoteCard from './components/NoteCard';
 import { useJaspyNotesContext } from './context/JaspyNotesContext';
+
+const fetchNotes = async () => {
+  const response = await fetch("api/notes");
+  
+  return response.json();
+}
 
 const App: Component = () => {
   const [isAddingNewNote, setIsAddingNewNote] = createSignal(true);
@@ -12,6 +18,9 @@ const App: Component = () => {
 
   
   const { notes, setNotes } = useJaspyNotesContext();
+  
+  const [serverNotes] = createResource(fetchNotes);
+
   
   const beginNewNote = () => {
     setIsAddingNewNote(true);
@@ -31,6 +40,17 @@ const App: Component = () => {
       <header class="my-4 p-2 text-xl flex items-center justify-center gap-4">
         <h1>Jaspy Notes</h1>
       </header>
+      
+      <Suspense fallback={<div>Loading...</div>}>
+        <Switch>
+          <Match when={serverNotes.error}>
+            <span>Error: {serverNotes.error.message}</span>
+          </Match>
+          <Match when={serverNotes()}>
+            <div>{JSON.stringify(serverNotes())}</div>
+          </Match>
+        </Switch>
+      </Suspense>
       
       <main class="flex-1">
         <div class="grid sticky-grid">
