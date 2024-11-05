@@ -24,7 +24,7 @@ const fakeNotes: Note[] = [
 ];
 
 const createPostSchema = noteSchema.omit({id: true});
-// Could define as z.object({
+// const createPostSchema = z.object({ //manual way of .omit
 //   title: z.string().min(3).max(100),
 //   body: z.string()
 // })
@@ -35,10 +35,10 @@ export const notesRoute = new Hono()
 })
 .post("/", zValidator("json", createPostSchema), async (c) => {
   //const note = createPostSchema.parse(data); // Could have done the zValidator manually
-  const note = await c.req.valid("json");
-  fakeNotes.push({...note, id: fakeNotes.length+1})
-  console.log({note});
-  return c.json(note);
+  const note = c.req.valid("json");
+  const newNoteId = fakeNotes.length + 1;
+  fakeNotes.push({...note, id: newNoteId})
+  return c.json({"id": newNoteId});
 })
 .get("/:id{[0-9]+}", (c) => { // Regex makes sure there is an id in the note
   const id = Number.parseInt(c.req.param("id"));
@@ -48,13 +48,13 @@ export const notesRoute = new Hono()
   }
   return c.json({note});
 })
-.delete("/:id{[0-9]+}", (c) => { // Regex makes sure there is an id in the note
-  const id = Number.parseInt(c.req.param("id"));
-  const index = fakeNotes.findIndex(note => note.id == id);
-  if (index === -1) {
-    return c.notFound();   
-  }
-  const deletedNote = fakeNotes.splice(index, 1)[0];
-  return c.json({deletedNote});
-})
+// .delete("/:id{[0-9]+}", (c) => { // Regex makes sure there is an id in the note
+//   const id = Number.parseInt(c.req.param("id"));
+//   const index = fakeNotes.findIndex(note => note.id == id);
+//   if (index === -1) {
+//     return c.notFound();   
+//   }
+//   const deletedNote = fakeNotes.splice(index, 1)[0];
+//   return c.json({deletedNote});
+// })
 // .put

@@ -6,7 +6,7 @@ const app = new Hono()
 
 app.use("*", logger())
 
-app.get('/test', (c) => {
+app.get('/api/test', (c) => {
   return c.json({"message": "test"})
 })
 

@@ -1,4 +1,4 @@
-import { Component, createContext, JSXElement, useContext } from "solid-js";
+import { createContext, JSXElement, useContext } from "solid-js";
 import { createStore, SetStoreFunction } from "solid-js/store";
 
 export type JaspyNotesType = {
