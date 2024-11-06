@@ -2,6 +2,7 @@ import { createContext, JSXElement, useContext } from "solid-js";
 import { createStore, SetStoreFunction } from "solid-js/store";
 
 export type JaspyNotesType = {
+  id?: number,
   title: string,
   body: string
 }

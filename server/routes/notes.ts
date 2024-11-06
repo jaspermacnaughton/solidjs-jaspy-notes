@@ -31,7 +31,7 @@ const createPostSchema = noteSchema.omit({id: true});
 
 export const notesRoute = new Hono()
 .get("/", async (c) => {
-  return c.json({notes: fakeNotes})
+  return c.json(fakeNotes)
 })
 .post("/", zValidator("json", createPostSchema), async (c) => {
   //const note = createPostSchema.parse(data); // Could have done the zValidator manually

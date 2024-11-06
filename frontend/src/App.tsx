@@ -1,13 +1,14 @@
 import { createResource, createSignal, For, Show, type Component } from 'solid-js';
 import NoteCard from './components/NoteCard';
+import { JaspyNotesType } from './context/JaspyNotesContext';
 
-const loadNotes = async (): Promise<Object> => {
+const loadNotes = async (): Promise<JaspyNotesType[]> => {
     const response = await fetch("api/notes");
     return response.json();
   }
 
 const App: Component = () => {
-  const [notes, {mutate}] = createResource(loadNotes);
+  const [notes, {mutate}] = createResource<JaspyNotesType[]>(loadNotes);
   
   const [isAddingNewNote, setIsAddingNewNote] = createSignal(true);
   const [newTitle, setNewTitle] = createSignal("Example Title");
@@ -35,7 +36,10 @@ const App: Component = () => {
       }
 
       const result = await response.json();
-      console.log(`Added new note with id ${result.id}`);
+      
+      mutate((existingNotes = []) => {
+        return [...existingNotes, { id: result.id, title: newTitle(), body: newBody() }]
+      });
       
     } catch (err: any) {
       setError(err.message);
