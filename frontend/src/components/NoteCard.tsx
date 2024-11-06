@@ -17,7 +17,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
   }
   
   return (
-    <div class="bg-white pt-2 p-4 m-4 text-center rounded-md shadow-md">
+    <div class="bg-white pt-2 p-4 ml-0 mb-0 m-4 text-center rounded-md shadow-md">
       <div class="flex items-center justify-between w-full">
         <div class="w-6"></div>
         <h2 class="flex-grow"><b>{props.title}</b></h2>

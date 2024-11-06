@@ -47,7 +47,7 @@ const App: Component = () => {
   };
 
   return (
-    <div class="p-4">
+    <>
       <header class="my-4 p-2 flex items-center justify-center">
         <h1 class="text-2xl mb-4">Jaspy Notes</h1>
       </header>
@@ -114,7 +114,7 @@ const App: Component = () => {
         </div>
       </Show>
       </footer>
-    </div>
+    </>
   );
 }
 
