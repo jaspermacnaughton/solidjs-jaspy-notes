@@ -45,6 +45,10 @@ const App: Component = () => {
       setError(err.message);
     }
   };
+  
+  const deleteNewNote = (indexTodelete: number) => {
+    console.log(`Want to delete ${indexTodelete}`)
+  }
 
   return (
     <>
@@ -66,7 +70,7 @@ const App: Component = () => {
           <div class="grid sticky-grid">
             <For each={notes()}>
               {(item, index) => (
-                <NoteCard title={item.title} body={item.body} arrayIndex={index()} />
+                <NoteCard title={item.title} body={item.body} arrayIndex={index()} onDelete={deleteNewNote}/>
               )}
             </For>
           </div>
