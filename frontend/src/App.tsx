@@ -63,16 +63,13 @@ const App: Component = () => {
           when={!notes.loading} /*notes.error / notes.error.message */
           fallback={<div>Loading...</div>}
         >
-          <pre class="bg-gray-100 p-4 rounded">
-            {JSON.stringify(notes(), null, 2)}
-          </pre>
-          {/* <div class="grid sticky-grid">
+          <div class="grid sticky-grid">
             <For each={notes()}>
               {(item, index) => (
                 <NoteCard title={item.title} body={item.body} arrayIndex={index()} />
               )}
             </For>
-          </div> */}
+          </div>
         </Show>
       </main>
       
