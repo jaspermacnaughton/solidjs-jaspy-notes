@@ -2,7 +2,7 @@ import { createContext, JSXElement, useContext } from "solid-js";
 import { createStore, SetStoreFunction } from "solid-js/store";
 
 export type JaspyNotesType = {
-  id?: number,
+  id: number,
   title: string,
   body: string
 }
@@ -22,9 +22,9 @@ export function JaspyNotesContextProvider(props: JaspyNotesProviderProps) {
   //const [items, setItems] = createStore(new Array<JaspyNotesType>())
   
   const [notes, setNotes] = createStore([
-    {title: "Example Note 1", body: "This is the first notes body"},
-    {title: "Example Note 2", body: "This is the second notes body"},
-    {title: "Example Note 3", body: "This is NUMBA three"}
+    {id: 1, title: "Example Note 1", body: "This is the first notes body"},
+    {id: 2, title: "Example Note 2", body: "This is the second notes body"},
+    {id: 3, title: "Example Note 3", body: "This is NUMBA three"}
   ]);
 
   return (

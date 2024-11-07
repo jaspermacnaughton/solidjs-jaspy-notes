@@ -23,36 +23,45 @@ const fakeNotes: Note[] = [
   { id: 2, title: "Remember to Stretch", body: "Quads, Hamstrings, and Shoulders" },
 ];
 
-const createPostSchema = noteSchema.omit({id: true});
-// const createPostSchema = z.object({ //manual way of .omit
+let nextAvailId = 3;
+
+const createNoteSchema = noteSchema.omit({id: true});
+// const createNoteSchema = z.object({ //manual way of .omit
 //   title: z.string().min(3).max(100),
 //   body: z.string()
 // })
+
+const deleteNoteSchema = z.object({
+  id: z.number().min(0).int()
+})
 
 export const notesRoute = new Hono()
 .get("/", async (c) => {
   return c.json(fakeNotes)
 })
-.post("/", zValidator("json", createPostSchema), async (c) => {
-  //const note = createPostSchema.parse(data); // Could have done the zValidator manually
-  const note = c.req.valid("json");
-  const newNoteId = fakeNotes.length + 1;
-  fakeNotes.push({...note, id: newNoteId})
+.post("/", zValidator("json", createNoteSchema), async (c) => {
+  //const note = createNoteSchema.parse(data); // Could have done the zValidator manually
+  const data = c.req.valid("json");
+  const newNoteId = nextAvailId;
+  nextAvailId += 1;
+  fakeNotes.push({...data, id: newNoteId})
   return c.json({"id": newNoteId});
 })
-.get("/:id{[0-9]+}", (c) => { // Regex makes sure there is an id in the note
-  const id = Number.parseInt(c.req.param("id"));
-  const note = fakeNotes.find(note => note.id == id);
-  if (!note) {
-    return c.notFound();   
+.delete("/", zValidator("json", deleteNoteSchema), (c) => {
+  const data = c.req.valid("json");
+  const id = data.id;
+  const index = fakeNotes.findIndex(note => note.id == id);
+  if (index === -1) {
+    return c.notFound();
   }
-  return c.json({note});
+  const deletedNote = fakeNotes.splice(index, 1)[0];
+  return c.json({deletedNote});
 })
 // .delete("/:id{[0-9]+}", (c) => { // Regex makes sure there is an id in the note
 //   const id = Number.parseInt(c.req.param("id"));
 //   const index = fakeNotes.findIndex(note => note.id == id);
 //   if (index === -1) {
-//     return c.notFound();   
+//     return c.notFound();
 //   }
 //   const deletedNote = fakeNotes.splice(index, 1)[0];
 //   return c.json({deletedNote});

@@ -2,6 +2,7 @@ import { createResource, createSignal, For, Show, type Component } from 'solid-j
 import NoteCard from './components/NoteCard';
 import { JaspyNotesType } from './context/JaspyNotesContext';
 
+
 const loadNotes = async (): Promise<JaspyNotesType[]> => {
     const response = await fetch("api/notes");
     return response.json();
@@ -32,11 +33,12 @@ const App: Component = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save new note.');
+        throw new Error(`Failed to save the new note titled "${newTitle()}"`);
       }
 
       const result = await response.json();
       
+      // With this method we are at risk of getting out of sync with db, but we are passing less data back and forth
       mutate((existingNotes = []) => {
         return [...existingNotes, { id: result.id, title: newTitle(), body: newBody() }]
       });
@@ -46,8 +48,42 @@ const App: Component = () => {
     }
   };
   
-  const deleteNewNote = (indexTodelete: number) => {
-    console.log(`Want to delete ${indexTodelete}`)
+  const deleteNewNote = async (idTodelete: number) => {
+    setError(null);
+    
+    try {
+      const response = await fetch('api/notes', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: idTodelete
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete note ${idTodelete}`);
+      }
+
+      const result = await response.json();
+      
+      // Todo: Similarly to the note in postNewNote, this is a little risky to do these in tandem
+      //       Would be interesting to performance test this versus returning entire list of notes
+      mutate((existingNotes = []) => {
+        const updatedNotes = [...existingNotes];
+        const indexToDelete = existingNotes.findIndex(note => note.id == idTodelete);
+        if (indexToDelete === -1) {
+          throw new Error(`Failed to delete note ${idTodelete}`);
+        }
+        updatedNotes.splice(indexToDelete, 1);
+        return updatedNotes;
+      }); 
+      
+    } catch (err: any) {
+      setError(err.message);
+    }
+    
   }
 
   return (
@@ -69,8 +105,8 @@ const App: Component = () => {
         >
           <div class="grid sticky-grid">
             <For each={notes()}>
-              {(item, index) => (
-                <NoteCard title={item.title} body={item.body} arrayIndex={index()} onDelete={deleteNewNote}/>
+              {(item) => (
+                <NoteCard id={item.id} title={item.title} body={item.body} onDelete={deleteNewNote}/>
               )}
             </For>
           </div>
