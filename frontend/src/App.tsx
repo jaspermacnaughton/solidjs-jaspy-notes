@@ -65,8 +65,6 @@ const App: Component = () => {
       if (!response.ok) {
         throw new Error(`Failed to delete note ${idTodelete}`);
       }
-
-      const result = await response.json();
       
       // Todo: Similarly to the note in postNewNote, this is a little risky to do these in tandem
       //       Would be interesting to performance test this versus returning entire list of notes

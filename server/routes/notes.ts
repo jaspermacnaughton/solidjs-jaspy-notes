@@ -54,8 +54,8 @@ export const notesRoute = new Hono()
   if (index === -1) {
     return c.notFound();
   }
-  const deletedNote = fakeNotes.splice(index, 1)[0];
-  return c.json({deletedNote});
+  fakeNotes.splice(index, 1)[0];
+  return new Response();
 })
 // .delete("/:id{[0-9]+}", (c) => { // Regex makes sure there is an id in the note
 //   const id = Number.parseInt(c.req.param("id"));
