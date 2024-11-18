@@ -1,15 +1,11 @@
-# bun-app
+# Jaspy Notes
 
-To install dependencies:
+Basic Bun & SolidJS app for https://jaspynotes.xyz
 
+Run Build
 ```bash
-bun install
+cd frontend
+bun run build
+cd ..
+bun run server/index.ts
 ```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.1.31. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
