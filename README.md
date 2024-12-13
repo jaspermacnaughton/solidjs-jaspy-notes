@@ -1,11 +1,4 @@
 # Jaspy Notes
 
-Basic Bun & SolidJS app for https://jaspynotes.xyz
+Basic note CRUD app to learn SolidJS, Bun/Hono and Posgres. Hosted at https://jaspynotes.xyz
 
-Run Build
-```bash
-cd frontend
-bun run build
-cd ..
-bun run server/index.ts
-```
