@@ -15,17 +15,17 @@ function getPosgresClient() {
 }
 
 const noteSchema = z.object({
-  id: z.number().int().positive().min(1),
+  note_id: z.number().int().positive().min(1),
   title: z.string().min(3).max(100),
   body: z.string()
 })
 
 const createNoteSchema = noteSchema.omit({
-  id: true
+  note_id: true
 });
 
 const deleteNoteSchema = z.object({
-  id: z.number().min(0).int()
+  note_id: z.number().min(0).int()
 });
 
 export const notesRoute = new Hono()
@@ -40,7 +40,7 @@ export const notesRoute = new Hono()
     // console.log("PostgreSQL Version:", res.rows[0].version);
     const res = await postgresClient.query(`
       SELECT * FROM public."Notes"
-      ORDER BY id ASC
+      ORDER BY note_id ASC
       `);
     return c.json(res.rows)
     
@@ -64,9 +64,9 @@ export const notesRoute = new Hono()
     const res = await postgresClient.query(`
       INSERT INTO public."Notes" (title, body)
       VALUES ('${data.body}', '${data.body}')
-      RETURNING id;
+      RETURNING note_id;
       `);
-    return c.json({"id": res.rows[0]["id"]}); // only adding one row at a time so it's safe to just return the first
+    return c.json({"note_id": res.rows[0]["note_id"]}); // only adding one row at a time so it's safe to just return the first
     
   } catch (err) {
     console.error('Error emitted:', err);
@@ -78,7 +78,7 @@ export const notesRoute = new Hono()
 })
 .delete("/", zValidator("json", deleteNoteSchema), async (c) => {
   const data = c.req.valid("json");
-  const id = data.id;
+  const note_id = data.note_id;
   
   const postgresClient = getPosgresClient();
   
@@ -86,7 +86,7 @@ export const notesRoute = new Hono()
     await postgresClient.connect();
     const res = await postgresClient.query(`
       DELETE FROM public."Notes"
-      WHERE id = ${id};
+      WHERE note_id = ${note_id};
       `);
     return new Response();
     

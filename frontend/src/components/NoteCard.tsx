@@ -1,10 +1,10 @@
 import type { Component } from 'solid-js';
 
 type NoteCardProps = {
-  id: number;
+  note_id: number;
   title: string,
   body: string,
-  onDelete: (id: number) => void;
+  onDelete: (note_id: number) => void;
 }
 
 const NoteCard: Component<NoteCardProps> = (props) => {
@@ -14,7 +14,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
         <div class="w-6"></div>
         <h2 class="flex-grow"><b>{props.title}</b></h2>
         <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-          onClick={() => props.onDelete(props.id)}>
+          onClick={() => props.onDelete(props.note_id)}>
           delete
         </span>
       </div>

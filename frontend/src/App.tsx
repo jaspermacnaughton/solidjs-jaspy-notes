@@ -40,7 +40,7 @@ const App: Component = () => {
       
       // With this method we are at risk of getting out of sync with db, but we are passing less data back and forth
       mutate((existingNotes = []) => {
-        return [...existingNotes, { id: result.id, title: newTitle(), body: newBody() }]
+        return [...existingNotes, { note_id: result.note_id, title: newTitle(), body: newBody() }]
       });
       
     } catch (err: any) {
@@ -58,7 +58,7 @@ const App: Component = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: idTodelete
+          note_id: idTodelete
         }),
       });
 
@@ -70,7 +70,7 @@ const App: Component = () => {
       //       Would be interesting to performance test this versus returning entire list of notes
       mutate((existingNotes = []) => {
         const updatedNotes = [...existingNotes];
-        const indexToDelete = existingNotes.findIndex(note => note.id == idTodelete);
+        const indexToDelete = existingNotes.findIndex(note => note.note_id == idTodelete);
         if (indexToDelete === -1) {
           throw new Error(`Failed to delete note ${idTodelete}`);
         }
@@ -104,7 +104,7 @@ const App: Component = () => {
           <div class="grid sticky-grid">
             <For each={notes()}>
               {(item) => (
-                <NoteCard id={item.id} title={item.title} body={item.body} onDelete={deleteNewNote}/>
+                <NoteCard note_id={item.note_id} title={item.title} body={item.body} onDelete={deleteNewNote}/>
               )}
             </For>
           </div>
