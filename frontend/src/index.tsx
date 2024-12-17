@@ -3,7 +3,6 @@ import './index.css';
 import { render } from 'solid-js/web';
 
 import App from './App';
-import { JaspyNotesContextProvider } from './context/JaspyNotesContext';
 
 const root = document.getElementById('root');
 
@@ -13,10 +12,4 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   );
 }
 
-// render(() => <App />, root!);
-
-render(() => 
-  <JaspyNotesContextProvider>
-    <App />
-  </JaspyNotesContextProvider>
-, root!);
+render(() => <App />, root!);
