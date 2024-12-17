@@ -1,22 +1,11 @@
 import { Hono } from "hono"
 import { z } from "zod";
 import { zValidator } from '@hono/zod-validator'
-import { Client } from 'pg';
-import { env } from "bun";
-
-function getPosgresClient() {
-  return new Client({
-    user: env.DB_USER,
-    host: env.DB_HOST,
-    database: env.DB_NAME,
-    password: env.DB_PASSWORD,
-    port: Number(env.DB_PORT),
-  });
-}
+import { getPostgresClient } from '../utils/db';
 
 const noteSchema = z.object({
-  note_id: z.number().int().positive().min(1),
-  title: z.string().min(3).max(100),
+  note_id: z.number().int(),
+  title: z.string().min(3).max(255),
   body: z.string()
 })
 
@@ -25,52 +14,45 @@ const createNoteSchema = noteSchema.omit({
 });
 
 const deleteNoteSchema = z.object({
-  note_id: z.number().min(0).int()
+  note_id: z.number().int()
 });
 
 export const notesRoute = new Hono()
 .get("/", async (c) => {
-  const postgresClient = getPosgresClient();
+  const postgresClient = getPostgresClient();
   
   try {
-    
     await postgresClient.connect();
-    // Test query
-    // const res = await client.query('SELECT version();');
-    // console.log("PostgreSQL Version:", res.rows[0].version);
     const res = await postgresClient.query(`
       SELECT * FROM public."Notes"
       ORDER BY note_id ASC
-      `);
+    `);
     return c.json(res.rows)
     
   } catch (err) {
-    console.error('Error emitted:', err);
-    return c.json({"error": 'Internal Server Error'}, 500);
+    return c.json({ success: false, error: 'Failed to fetch notes' }, 500);
     
   } finally {
     await postgresClient.end();
-    
   }
 })
 .post("/", zValidator("json", createNoteSchema), async (c) => {
   //const note = createNoteSchema.parse(data); // Could have done the zValidator manually
   const data = c.req.valid("json");
   
-  const postgresClient = getPosgresClient();
+  const postgresClient = getPostgresClient();
   
   try {
     await postgresClient.connect();
     const res = await postgresClient.query(`
       INSERT INTO public."Notes" (title, body)
-      VALUES ('${data.body}', '${data.body}')
+      VALUES ('${data.title}', '${data.body}')
       RETURNING note_id;
       `);
-    return c.json({"note_id": res.rows[0]["note_id"]}); // only adding one row at a time so it's safe to just return the first
+    return c.json({ success: true, note_id: res.rows[0]["note_id"]}); // only adding one row at a time so it's safe to just return the first
     
   } catch (err) {
-    console.error('Error emitted:', err);
-    return c.json({"error": 'Internal Server Error'}, 500);
+    return c.json({ success: false, error: 'Internal Server Error' }, 500);
     
   } finally {
     await postgresClient.end();
@@ -80,7 +62,7 @@ export const notesRoute = new Hono()
   const data = c.req.valid("json");
   const note_id = data.note_id;
   
-  const postgresClient = getPosgresClient();
+  const postgresClient = getPostgresClient();
   
   try {
     await postgresClient.connect();
@@ -88,11 +70,10 @@ export const notesRoute = new Hono()
       DELETE FROM public."Notes"
       WHERE note_id = ${note_id};
       `);
-    return new Response();
+    return c.json({ success: true });
     
   } catch (err) {
-    console.error('Error emitted:', err);
-    return c.json({"error": 'Internal Server Error'}, 500);
+    return c.json({ success: false, error: 'Internal Server Error' }, 500);
     
   } finally {
     await postgresClient.end();
