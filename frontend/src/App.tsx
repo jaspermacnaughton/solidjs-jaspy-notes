@@ -2,20 +2,30 @@ import { createResource, createSignal, For, Show, type Component } from 'solid-j
 import NoteCard from './components/NoteCard';
 import { JaspyNotesType } from './context/JaspyNotesContext';
 
+const fetchNotes = async (): Promise<JaspyNotesType[]> => {
+  const response = await fetch("api/notes");
+  const data = await response.json();
+  handleApiError(response, data, 'Failed to load notes');
+  return data;
+};
 
-const loadNotes = async (): Promise<JaspyNotesType[]> => {
-    const response = await fetch("api/notes");
-    return response.json();
+const handleApiError = (response: Response, data: any, defaultMessage: string) => {
+  if (!response.ok || data.error) {
+    throw new Error(data.error || defaultMessage);
   }
+};
 
 const App: Component = () => {
-  const [notes, {mutate}] = createResource<JaspyNotesType[]>(loadNotes);
-  
+  const [error, setError] = createSignal<string | null>(null);
   const [isAddingNewNote, setIsAddingNewNote] = createSignal(true);
   const [newTitle, setNewTitle] = createSignal("Example Title");
   const [newBody, setNewBody] = createSignal("Example Body");
-  
-  const [error, setError] = createSignal(null);
+  const [notes, {mutate}] = createResource<JaspyNotesType[]>(() => 
+    fetchNotes().catch(err => {
+      setError(err.message);
+      throw err;
+    })
+  );
 
   const postNewNote = async () => {
     setError(null);
@@ -31,16 +41,12 @@ const App: Component = () => {
           body: newBody()
         }),
       });
-
-      if (!response.ok) {
-        throw new Error(`Failed to save the new note titled "${newTitle()}"`);
-      }
-
-      const result = await response.json();
       
-      // With this method we are at risk of getting out of sync with db, but we are passing less data back and forth
+      const data = await response.json();
+      handleApiError(response, data, `Failed to save the new note titled "${newTitle()}"`);
+      
       mutate((existingNotes = []) => {
-        return [...existingNotes, { note_id: result.note_id, title: newTitle(), body: newBody() }]
+        return [...existingNotes, { note_id: data.note_id, title: newTitle(), body: newBody() }]
       });
       
     } catch (err: any) {
@@ -48,7 +54,7 @@ const App: Component = () => {
     }
   };
   
-  const deleteNewNote = async (idTodelete: number) => {
+  const deleteNote = async (idTodelete: number) => {
     setError(null);
     
     try {
@@ -61,13 +67,10 @@ const App: Component = () => {
           note_id: idTodelete
         }),
       });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete note ${idTodelete}`);
-      }
       
-      // Todo: Similarly to the note in postNewNote, this is a little risky to do these in tandem
-      //       Would be interesting to performance test this versus returning entire list of notes
+      const data = await response.json();
+      handleApiError(response, data, `Failed to delete note ${idTodelete}`);
+      
       mutate((existingNotes = []) => {
         const updatedNotes = [...existingNotes];
         const indexToDelete = existingNotes.findIndex(note => note.note_id == idTodelete);
@@ -76,7 +79,7 @@ const App: Component = () => {
         }
         updatedNotes.splice(indexToDelete, 1);
         return updatedNotes;
-      }); 
+      });
       
     } catch (err: any) {
       setError(err.message);
@@ -98,13 +101,13 @@ const App: Component = () => {
       
       <main class="flex-1">
         <Show
-          when={!notes.loading} /*notes.error / notes.error.message */
+          when={!notes.loading && !notes.error}
           fallback={<div>Loading...</div>}
         >
           <div class="grid sticky-grid">
             <For each={notes()}>
               {(item) => (
-                <NoteCard note_id={item.note_id} title={item.title} body={item.body} onDelete={deleteNewNote}/>
+                <NoteCard note_id={item.note_id} title={item.title} body={item.body} onDelete={deleteNote}/>
               )}
             </For>
           </div>
