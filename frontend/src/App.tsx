@@ -5,8 +5,6 @@ import Notes from './components/Notes';
 
 const AppContent: Component = () => {
   const auth = useAuth();
-  
-  console.log("Auth state:", auth.isAuthenticated(), auth.username());
 
   return (
     <Show
