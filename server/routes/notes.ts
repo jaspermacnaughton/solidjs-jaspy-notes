@@ -37,16 +37,16 @@ export const notesRoute = new Hono()
   }
 })
 .post("/", zValidator("json", createNoteSchema), async (c) => {
-  //const note = createNoteSchema.parse(data); // Could have done the zValidator manually
-  const data = c.req.valid("json");
-  
   const postgresClient = getPostgresClient();
   
   try {
+    const { title, body } = c.req.valid("json");
+    
     await postgresClient.connect();
+    
     const res = await postgresClient.query(`
       INSERT INTO public."Notes" (title, body)
-      VALUES ('${data.title}', '${data.body}')
+      VALUES ('${title}', '${body}')
       RETURNING note_id;
       `);
     return c.json({ success: true, note_id: res.rows[0]["note_id"]}); // only adding one row at a time so it's safe to just return the first
@@ -59,13 +59,13 @@ export const notesRoute = new Hono()
   }
 })
 .delete("/", zValidator("json", deleteNoteSchema), async (c) => {
-  const data = c.req.valid("json");
-  const note_id = data.note_id;
-  
   const postgresClient = getPostgresClient();
   
   try {
+    const { note_id } = c.req.valid("json");
+    
     await postgresClient.connect();
+    
     const res = await postgresClient.query(`
       DELETE FROM public."Notes"
       WHERE note_id = ${note_id};
