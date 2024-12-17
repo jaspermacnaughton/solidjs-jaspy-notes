@@ -9,6 +9,12 @@ export type AuthContextType = {
   logout: () => void;
 }
 
+type StoredAuthState = {
+  isAuthenticated: boolean;
+  userId: number | null;
+  username: string | null;
+}
+
 export const AuthContext = createContext<AuthContextType>();
 
 type AuthProviderProps = {
@@ -16,9 +22,30 @@ type AuthProviderProps = {
 }
 
 export function AuthContextProvider(props: AuthProviderProps) {
-  const [isAuthenticated, setIsAuthenticated] = createSignal(false);
-  const [userId, setUserId] = createSignal<number | null>(null);
-  const [username, setUsername] = createSignal<string | null>(null);
+  // Initialize from localStorage if available
+  const loadStoredAuth = (): StoredAuthState => {
+    const stored = localStorage.getItem('authState');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    return {
+      isAuthenticated: false,
+      userId: null,
+      username: null
+    };
+  };
+
+  const [isAuthenticated, setIsAuthenticated] = createSignal(loadStoredAuth().isAuthenticated);
+  const [userId, setUserId] = createSignal<number | null>(loadStoredAuth().userId);
+  const [username, setUsername] = createSignal<string | null>(loadStoredAuth().username);
+
+  // Helper to update both state and localStorage
+  const updateAuthState = (state: StoredAuthState) => {
+    setIsAuthenticated(state.isAuthenticated);
+    setUserId(state.userId);
+    setUsername(state.username);
+    localStorage.setItem('authState', JSON.stringify(state));
+  };
 
   const login = async (username: string, password: string) => {
     const response = await fetch('/api/auth/login', {
@@ -29,12 +56,12 @@ export function AuthContextProvider(props: AuthProviderProps) {
 
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Login failed');
-    
-    console.log("Successfully logged in");
 
-    setIsAuthenticated(true);
-    setUserId(data.user_id);
-    setUsername(username);
+    updateAuthState({
+      isAuthenticated: true,
+      userId: data.user_id,
+      username: username
+    });
   };
 
   const register = async (username: string, password: string) => {
@@ -47,15 +74,19 @@ export function AuthContextProvider(props: AuthProviderProps) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Registration failed');
 
-    setIsAuthenticated(true);
-    setUserId(data.user_id);
-    setUsername(username);
+    updateAuthState({
+      isAuthenticated: true,
+      userId: data.user_id,
+      username: username
+    });
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    setUserId(null);
-    setUsername(null);
+    updateAuthState({
+      isAuthenticated: false,
+      userId: null,
+      username: null
+    });
   };
 
   return (
