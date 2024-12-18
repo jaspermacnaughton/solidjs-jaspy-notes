@@ -2,6 +2,8 @@ import { Hono } from "hono"
 import { z } from "zod";
 import { zValidator } from '@hono/zod-validator'
 import { getPostgresClient } from '../utils/db';
+import { authMiddleware } from '../middleware/auth';
+import type { AuthedContext } from '../middleware/auth';
 
 const noteSchema = z.object({
   note_id: z.number().int(),
@@ -18,65 +20,77 @@ const deleteNoteSchema = z.object({
 });
 
 export const notesRoute = new Hono()
-.get("/", async (c) => {
-  const postgresClient = getPostgresClient();
-  
-  try {
-    await postgresClient.connect();
-    const res = await postgresClient.query(`
-      SELECT * FROM public."Notes"
-      ORDER BY note_id ASC
-    `);
-    return c.json(res.rows)
+  .use('/*', authMiddleware)
+  .get('/', async (c: AuthedContext) => {
+    const postgresClient = getPostgresClient();
     
-  } catch (err) {
-    return c.json({ success: false, error: 'Failed to fetch notes' }, 500);
-    
-  } finally {
-    await postgresClient.end();
-  }
-})
-.post("/", zValidator("json", createNoteSchema), async (c) => {
-  const postgresClient = getPostgresClient();
-  
-  try {
-    const { title, body } = c.req.valid("json");
-    
-    await postgresClient.connect();
-    
-    const res = await postgresClient.query(`
-      INSERT INTO public."Notes" (title, body)
-      VALUES ('${title}', '${body}')
-      RETURNING note_id;
+    try {
+      await postgresClient.connect();
+      
+      const res = await postgresClient.query(`
+        SELECT note_id, title, body 
+        FROM public."Notes"
+        WHERE user_id = ${c.user!.user_id}
+        ORDER BY note_id DESC
       `);
-    return c.json({ success: true, note_id: res.rows[0]["note_id"]}); // only adding one row at a time so it's safe to just return the first
+      
+      return c.json(res.rows);
+      
+    } catch (err) {
+      return c.json({ error: 'Internal Server Error' }, 500);
+      
+    } finally {
+      await postgresClient.end();
+    }
+  })
+  .post('/', async (c: AuthedContext) => {
+    const postgresClient = getPostgresClient();
     
-  } catch (err) {
-    return c.json({ success: false, error: 'Internal Server Error' }, 500);
-    
-  } finally {
-    await postgresClient.end();
-  }
-})
-.delete("/", zValidator("json", deleteNoteSchema), async (c) => {
-  const postgresClient = getPostgresClient();
-  
-  try {
-    const { note_id } = c.req.valid("json");
-    
-    await postgresClient.connect();
-    
-    const res = await postgresClient.query(`
-      DELETE FROM public."Notes"
-      WHERE note_id = ${note_id};
+    try {
+      const { title, body } = await c.req.json();
+      
+      await postgresClient.connect();
+      
+      const res = await postgresClient.query(`
+        INSERT INTO public."Notes" (user_id, title, body)
+        VALUES (${c.user!.user_id}, '${title}', '${body}')
+        RETURNING note_id
       `);
-    return c.json({ success: true });
+      
+      return c.json({ note_id: res.rows[0].note_id });
+      
+    } catch (err) {
+      return c.json({ error: 'Internal Server Error' }, 500);
+      
+    } finally {
+      await postgresClient.end();
+    }
+  })
+  .delete('/', async (c: AuthedContext) => {
+    const postgresClient = getPostgresClient();
     
-  } catch (err) {
-    return c.json({ success: false, error: 'Internal Server Error' }, 500);
-    
-  } finally {
-    await postgresClient.end();
-  }  
-})
+    try {
+      const { note_id } = await c.req.json();
+      
+      await postgresClient.connect();
+      
+      const res = await postgresClient.query(`
+        DELETE FROM public."Notes"
+        WHERE note_id = ${note_id} AND user_id = ${c.user!.user_id}
+        RETURNING note_id
+      `);
+      
+      if (res.rowCount === 0) {
+        return c.json({ error: 'Note not found or unauthorized' }, 404);
+      }
+      
+      return c.json({ success: true });
+      
+    } catch (err) {
+      return c.json({ error: 'Internal Server Error' }, 500);
+      
+    } finally {
+      await postgresClient.end();
+    }
+  });
 // .put

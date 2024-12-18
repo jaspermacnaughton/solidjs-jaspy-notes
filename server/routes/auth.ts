@@ -2,11 +2,29 @@ import { Hono } from "hono";
 import { getPostgresClient } from '../utils/db';
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
+import { sign } from "jsonwebtoken";
+import { env } from "bun";
+
+const JWT_SECRET = env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
 
 const credentialsSchema = z.object({
   username: z.string().max(31),
   password: z.string()
 })
+
+const generateJWT = (user_id: number, username: string) => {
+  return sign(
+    { 
+      user_id,
+      username 
+    },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+}
 
 export const authRoute = new Hono()
 .post("/register", zValidator("json", credentialsSchema), async (c) => {
@@ -17,7 +35,6 @@ export const authRoute = new Hono()
     
     await postgresClient.connect();
     
-    // Check if username already exists
     const existingUser = await postgresClient.query(`
       SELECT username FROM public."Users" 
       WHERE username = '${username}'
@@ -27,7 +44,6 @@ export const authRoute = new Hono()
       return c.json({ error: 'Username already exists' }, 400);
     }
 
-    // Create new user with hashed password
     const res = await postgresClient.query(`
       INSERT INTO public."Users" (username, password)
       VALUES ('${username}', crypt('${password}', gen_salt('bf')))
@@ -37,6 +53,7 @@ export const authRoute = new Hono()
     return c.json({ 
       success: true,
       user_id: res.rows[0].user_id,
+      token: generateJWT(res.rows[0].user_id, username)
     });
     
   } catch (err) {
@@ -54,7 +71,6 @@ export const authRoute = new Hono()
     
     await postgresClient.connect();
     
-    // Check if username and password match using crypt
     const user = await postgresClient.query(`
       SELECT user_id, username, password 
       FROM public."Users" 
@@ -69,6 +85,7 @@ export const authRoute = new Hono()
     return c.json({ 
       success: true,
       user_id: user.rows[0].user_id,
+      token: generateJWT(user.rows[0].user_id, username)
     });
     
   } catch (err) {
@@ -77,4 +94,4 @@ export const authRoute = new Hono()
   } finally {
     await postgresClient.end();
   }
-})
+});

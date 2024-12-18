@@ -1,51 +1,45 @@
-import { createContext, JSXElement, useContext, createSignal } from "solid-js";
+import { createContext, JSXElement, useContext, createSignal, onMount } from "solid-js";
 
 export type AuthContextType = {
   isAuthenticated: () => boolean;
   userId: () => number | null;
   username: () => string | null;
+  token: () => string | null;
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
-type StoredAuthState = {
-  isAuthenticated: boolean;
-  userId: number | null;
-  username: string | null;
-}
-
 export const AuthContext = createContext<AuthContextType>();
 
-type AuthProviderProps = {
-  children?: JSXElement;
-}
+export function AuthContextProvider(props: { children?: JSXElement }) {
+  const [isAuthenticated, setIsAuthenticated] = createSignal(false);
+  const [userId, setUserId] = createSignal<number | null>(null);
+  const [username, setUsername] = createSignal<string | null>(null);
+  const [token, setToken] = createSignal<string | null>(null);
 
-export function AuthContextProvider(props: AuthProviderProps) {
-  // Initialize from localStorage if available
-  const loadStoredAuth = (): StoredAuthState => {
+  // Check for stored auth on mount
+  onMount(() => {
     const stored = localStorage.getItem('authState');
     if (stored) {
-      return JSON.parse(stored);
+      try {
+        const state = JSON.parse(stored);
+        // Verify all required fields are present
+        if (state.userId && state.username && state.token) {
+          setIsAuthenticated(true);
+          setUserId(state.userId);
+          setUsername(state.username);
+          setToken(state.token);
+        } else {
+          // If missing required fields, clear the invalid stored state
+          localStorage.removeItem('authState');
+        }
+      } catch (e) {
+        // If JSON parsing fails, clear the invalid stored state
+        localStorage.removeItem('authState');
+      }
     }
-    return {
-      isAuthenticated: false,
-      userId: null,
-      username: null
-    };
-  };
-
-  const [isAuthenticated, setIsAuthenticated] = createSignal(loadStoredAuth().isAuthenticated);
-  const [userId, setUserId] = createSignal<number | null>(loadStoredAuth().userId);
-  const [username, setUsername] = createSignal<string | null>(loadStoredAuth().username);
-
-  // Helper to update both state and localStorage
-  const updateAuthState = (state: StoredAuthState) => {
-    setIsAuthenticated(state.isAuthenticated);
-    setUserId(state.userId);
-    setUsername(state.username);
-    localStorage.setItem('authState', JSON.stringify(state));
-  };
+  });
 
   const login = async (username: string, password: string) => {
     const response = await fetch('/api/auth/login', {
@@ -57,11 +51,17 @@ export function AuthContextProvider(props: AuthProviderProps) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Login failed');
 
-    updateAuthState({
-      isAuthenticated: true,
+    const authState = {
       userId: data.user_id,
-      username: username
-    });
+      username,
+      token: data.token
+    };
+
+    setUserId(data.user_id);
+    setUsername(username);
+    setToken(data.token);
+    setIsAuthenticated(true);
+    localStorage.setItem('authState', JSON.stringify(authState));
   };
 
   const register = async (username: string, password: string) => {
@@ -74,19 +74,25 @@ export function AuthContextProvider(props: AuthProviderProps) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Registration failed');
 
-    updateAuthState({
-      isAuthenticated: true,
+    const authState = {
       userId: data.user_id,
-      username: username
-    });
+      username,
+      token: data.token
+    };
+
+    setIsAuthenticated(true);
+    setUserId(data.user_id);
+    setUsername(username);
+    setToken(data.token);
+    localStorage.setItem('authState', JSON.stringify(authState));
   };
 
   const logout = () => {
-    updateAuthState({
-      isAuthenticated: false,
-      userId: null,
-      username: null
-    });
+    setIsAuthenticated(false);
+    setUserId(null);
+    setUsername(null);
+    setToken(null);
+    localStorage.removeItem('authState');
   };
 
   return (
@@ -94,6 +100,7 @@ export function AuthContextProvider(props: AuthProviderProps) {
       isAuthenticated,
       userId,
       username,
+      token,
       login,
       register,
       logout
@@ -105,6 +112,6 @@ export function AuthContextProvider(props: AuthProviderProps) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("AuthContext must be used within AuthProvider");
+  if (!context) throw new Error("useAuth must be used within AuthContextProvider");
   return context;
 } 

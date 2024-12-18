@@ -1,32 +1,32 @@
 import { createResource, createSignal, For, Show } from "solid-js";
 import NoteCard from "./NoteCard";
-import { JaspyNotesType } from "../context/JaspyNotesContext";
-
-const fetchNotes = async (): Promise<JaspyNotesType[]> => {
-  const response = await fetch("api/notes");
-  const data = await response.json();
-  handleApiError(response, data, 'Failed to load notes');
-  return data;
-};
-
-const handleApiError = (response: Response, data: any, defaultMessage: string) => {
-  if (!response.ok || data.error) {
-    throw new Error(data.error || defaultMessage);
-  }
-};
+import { useAuth } from "../context/AuthContext";
+import { Note } from '../types/notes';
+import { handleApiResponse } from "../utils/api";
 
 export default function Notes() {
+  const auth = useAuth();
   const [error, setError] = createSignal<string | null>(null);
   const [isAddingNewNote, setIsAddingNewNote] = createSignal(true);
   const [newTitle, setNewTitle] = createSignal("Example Title");
   const [newBody, setNewBody] = createSignal("Example Body");
   
-  const [notes, { mutate }] = createResource<JaspyNotesType[]>(() => 
+  const fetchNotes = async () => {
+    const response = await fetch("api/notes", {
+      headers: {
+        'Authorization': `Bearer ${auth.token()}`
+      }
+    });
+    return handleApiResponse(response, auth.logout);
+  };
+  
+  const [notes, { mutate }] = createResource(() => 
     fetchNotes().catch(err => {
       setError(err.message);
       throw err;
     })
   );
+
   const postNewNote = async () => {
     setError(null);
     
@@ -35,6 +35,7 @@ export default function Notes() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token()}`
         },
         body: JSON.stringify({
           title: newTitle(), 
@@ -42,9 +43,7 @@ export default function Notes() {
         }),
       });
       
-      const data = await response.json();
-      handleApiError(response, data, `Failed to save the new note titled "${newTitle()}"`);
-      
+      const data = await handleApiResponse(response, auth.logout);
       mutate((existingNotes = []) => {
         return [...existingNotes, { note_id: data.note_id, title: newTitle(), body: newBody() }]
       });
@@ -62,18 +61,17 @@ export default function Notes() {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token()}`
         },
         body: JSON.stringify({
           note_id: idTodelete
         }),
       });
       
-      const data = await response.json();
-      handleApiError(response, data, `Failed to delete note ${idTodelete}`);
-      
+      await handleApiResponse(response, auth.logout);
       mutate((existingNotes = []) => {
         const updatedNotes = [...existingNotes];
-        const indexToDelete = existingNotes.findIndex(note => note.note_id == idTodelete);
+        const indexToDelete = existingNotes.findIndex((note: Note) => note.note_id == idTodelete);
         if (indexToDelete === -1) {
           throw new Error(`Failed to delete note ${idTodelete}`);
         }
@@ -84,8 +82,8 @@ export default function Notes() {
     } catch (err: any) {
       setError(err.message);
     }
-    
-  }
+  };
+
   return (
     <>
       {error() && (
