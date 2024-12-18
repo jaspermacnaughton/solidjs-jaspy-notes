@@ -11,18 +11,6 @@ const AppContent: Component = () => {
       when={auth.isAuthenticated()}
       fallback={<Auth />}
     >
-      <header class="my-4 p-2 flex items-center justify-between">
-        <h1 class="text-2xl">Jaspy Notes</h1>
-        <div class="flex items-center gap-4">
-          <span>Welcome, {auth.username()}</span>
-          <button 
-            onClick={() => auth.logout()}
-            class="btn"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
       <Notes />
     </Show>
   );

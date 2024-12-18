@@ -86,11 +86,25 @@ export default function Notes() {
 
   return (
     <>
+      <header class="my-4 p-2 flex items-center justify-between">
+        <h1 class="text-2xl">Jaspy Notes</h1>
+        <div class="flex items-center gap-4">
+          <span>Welcome, {auth.username()}</span>
+          <button 
+            onClick={() => auth.logout()}
+            class="btn"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+      
       {error() && (
-          <div class="text-red-500 bg-red-200 px-4 py-2 mb-2 rounded">
-            Error: {error()}
-          </div>
-        )}
+        <div class="text-red-500 bg-red-200 px-4 py-2 mb-2 rounded">
+          Error: {error()}
+        </div>
+      )}
+      
       <main class="flex-1">
         <Show
           when={!notes.loading && !notes.error}
