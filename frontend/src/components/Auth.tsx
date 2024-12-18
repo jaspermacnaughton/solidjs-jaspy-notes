@@ -24,66 +24,72 @@ export default function Auth() {
   };
 
   return (
-    <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-      <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 class="mt-10 text-center text-2xl font-bold leading-9">
-          {isLogin() ? "Sign in to your account" : "Create a new account"}
-        </h2>
-      </div>
+    <div>
+      <header class="my-4 p-6 flex items-center justify-center">
+        <h1 class="text-3xl mb-4">Jaspy Notes</h1>
+      </header>
+      
+      <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+          <h2 class="mt-10 text-center text-2xl font-bold leading-9">
+            {isLogin() ? "Sign in to your account" : "Create a new account"}
+          </h2>
+        </div>
 
-      <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        {error() && (
-          <div class="text-red-500 bg-red-200 px-4 py-2 mb-4 rounded">
-            {error()}
-          </div>
-        )}
+        <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+          {error() && (
+            <div class="text-red-500 bg-red-200 px-4 py-2 mb-4 rounded">
+              {error()}
+            </div>
+          )}
 
-        <form class="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label class="block text-sm font-medium leading-6">
-              Username
-            </label>
-            <input
-              type="text"
-              required
-              autocomplete="username"
-              class="block w-full rounded-md border-0 py-1.5 px-2 shadow-sm ring-1 ring-inset ring-gray-300"
-              value={username()}
-              onInput={(e) => setUsername(e.currentTarget.value)}
-            />
-          </div>
+          <form class="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label class="block text-sm font-medium leading-6">
+                Username
+              </label>
+              <input
+                type="text"
+                required
+                autocomplete="username"
+                class="block w-full rounded-md border-0 py-1.5 px-2 shadow-sm ring-1 ring-inset ring-gray-300"
+                value={username()}
+                onInput={(e) => setUsername(e.currentTarget.value)}
+              />
+            </div>
 
-          <div>
-            <label class="block text-sm font-medium leading-6">
-              Password
-            </label>
-            <input
-              type="password"
-              autocomplete={isLogin() ? "current-password" : "new-password"}
-              required
-              class="block w-full rounded-md border-0 py-1.5 px-2 shadow-sm ring-1 ring-inset ring-gray-300"
-              value={password()}
-              onInput={(e) => setPassword(e.currentTarget.value)}
-            />
-          </div>
+            <div>
+              <label class="block text-sm font-medium leading-6">
+                Password
+              </label>
+              <input
+                type="password"
+                autocomplete={isLogin() ? "current-password" : "new-password"}
+                required
+                class="block w-full rounded-md border-0 py-1.5 px-2 shadow-sm ring-1 ring-inset ring-gray-300"
+                value={password()}
+                onInput={(e) => setPassword(e.currentTarget.value)}
+              />
+            </div>
 
-          <button
-            type="submit"
-            class="btn w-full"
-          >
-            {isLogin() ? "Sign in" : "Register"}
-          </button>
-        </form>
+            <button
+              type="submit"
+              class="btn w-full"
+            >
+              {isLogin() ? "Sign in" : "Register"}
+            </button>
+          </form>
 
-        <p class="mt-10 text-center text-sm text-gray-500">
-          {isLogin() ? "Don't have an account? " : "Already have an account? "}
-          <button
-            class="font-semibold text-amber-600 hover:text-amber-500"
-            onClick={() => setIsLogin(!isLogin())}
-          >
-            {isLogin() ? "Register here" : "Sign in here"}
-          </button>
-        </p>
+          <p class="mt-10 text-center text-sm text-gray-500">
+            {isLogin() ? "Don't have an account? " : "Already have an account? "}
+            <button
+              class="font-semibold text-amber-600 hover:text-amber-500"
+              onClick={() => setIsLogin(!isLogin())}
+            >
+              {isLogin() ? "Register here" : "Sign in here"}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
