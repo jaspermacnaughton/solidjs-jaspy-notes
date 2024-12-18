@@ -27,12 +27,13 @@ export const notesRoute = new Hono()
     try {
       await postgresClient.connect();
       
-      const res = await postgresClient.query(`
-        SELECT note_id, title, body 
-        FROM public."Notes"
-        WHERE user_id = ${c.user!.user_id}
-        ORDER BY note_id DESC
-      `);
+      const res = await postgresClient.query(
+        `SELECT note_id, title, body 
+        FROM public."Notes" 
+        WHERE user_id = $1 
+        ORDER BY note_id DESC`,
+        [c.user!.user_id]
+      );
       
       return c.json(res.rows);
       
@@ -51,11 +52,12 @@ export const notesRoute = new Hono()
       
       await postgresClient.connect();
       
-      const res = await postgresClient.query(`
-        INSERT INTO public."Notes" (user_id, title, body)
-        VALUES (${c.user!.user_id}, '${title}', '${body}')
-        RETURNING note_id
-      `);
+      const res = await postgresClient.query(
+        `INSERT INTO public."Notes" (user_id, title, body) 
+        VALUES ($1, $2, $3)
+        RETURNING note_id`,
+        [c.user!.user_id, title, body]
+      );
       
       return c.json({ note_id: res.rows[0].note_id });
       
@@ -74,11 +76,12 @@ export const notesRoute = new Hono()
       
       await postgresClient.connect();
       
-      const res = await postgresClient.query(`
-        DELETE FROM public."Notes"
-        WHERE note_id = ${note_id} AND user_id = ${c.user!.user_id}
-        RETURNING note_id
-      `);
+      const res = await postgresClient.query(
+        `DELETE FROM public."Notes"
+        WHERE note_id = $1 AND user_id = $2
+        RETURNING note_id`,
+        [note_id, c.user!.user_id]
+      );
       
       if (res.rowCount === 0) {
         return c.json({ error: 'Note not found or unauthorized' }, 404);

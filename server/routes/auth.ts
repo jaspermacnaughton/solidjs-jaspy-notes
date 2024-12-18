@@ -35,20 +35,21 @@ export const authRoute = new Hono()
     
     await postgresClient.connect();
     
-    const existingUser = await postgresClient.query(`
-      SELECT username FROM public."Users" 
-      WHERE username = '${username}'
-    `);
+    const existingUser = await postgresClient.query(
+      'SELECT username FROM public."Users" WHERE username = $1',
+      [username]
+    );
 
     if (existingUser.rows.length > 0) {
       return c.json({ error: 'Username already exists' }, 400);
     }
 
-    const res = await postgresClient.query(`
-      INSERT INTO public."Users" (username, password)
-      VALUES ('${username}', crypt('${password}', gen_salt('bf')))
-      RETURNING user_id;
-    `);
+    const res = await postgresClient.query(
+      `INSERT INTO public."Users" (username, password) 
+      VALUES ($1, crypt($2, gen_salt(\'bf\'))) 
+      RETURNING user_id`,
+      [username, password]
+    );
 
     return c.json({ 
       success: true,
@@ -71,26 +72,24 @@ export const authRoute = new Hono()
     
     await postgresClient.connect();
     
-    const user = await postgresClient.query(`
-      SELECT user_id, username, password 
-      FROM public."Users" 
-      WHERE username = '${username}' 
-      AND password = crypt('${password}', password)
-    `);
+    const res = await postgresClient.query(
+      `SELECT user_id FROM public."Users"
+      WHERE username = $1 AND password = crypt($2, password)`,
+      [username, password]
+    );
 
-    if (user.rows.length === 0) {
-      return c.json({ error: 'Invalid username or password' }, 401);
+    if (res.rows.length === 0) {
+      return c.json({ error: 'Invalid credentials' }, 401);
     }
 
     return c.json({ 
       success: true,
-      user_id: user.rows[0].user_id,
-      token: generateJWT(user.rows[0].user_id, username)
+      user_id: res.rows[0].user_id,
+      token: generateJWT(res.rows[0].user_id, username)
     });
     
   } catch (err) {
     return c.json({ success: false, error: 'Internal Server Error' }, 500);
-    
   } finally {
     await postgresClient.end();
   }
