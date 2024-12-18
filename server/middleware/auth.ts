@@ -22,9 +22,6 @@ interface JWTPayload {
 export async function authMiddleware(c: AuthedContext, next: Next) {
   const authHeader = c.req.header('Authorization');
   
-  console.log("Here is the auth header: ");
-  console.log(authHeader);
-  
   if (!authHeader?.startsWith('Bearer ')) {
     return c.json({ error: 'Unauthorized' }, 401);
   }
