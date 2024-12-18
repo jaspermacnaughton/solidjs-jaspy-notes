@@ -8,8 +8,8 @@ export default function Notes() {
   const auth = useAuth();
   const [error, setError] = createSignal<string | null>(null);
   const [isAddingNewNote, setIsAddingNewNote] = createSignal(true);
-  const [newTitle, setNewTitle] = createSignal("Example Title");
-  const [newBody, setNewBody] = createSignal("Example Body");
+  const [newTitle, setNewTitle] = createSignal("");
+  const [newBody, setNewBody] = createSignal("");
   
   const fetchNotes = async () => {
     const response = await fetch("api/notes", {
