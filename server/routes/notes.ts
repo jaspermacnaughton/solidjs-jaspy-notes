@@ -35,10 +35,10 @@ export const notesRoute = new Hono()
         [c.user!.user_id]
       );
       
-      return c.json(res.rows);
+      return c.json({ success: true, notes: res.rows });
       
     } catch (err) {
-      return c.json({ error: 'Internal Server Error' }, 500);
+      return c.json({ success: false, error: 'Internal Server Error' }, 500);
       
     } finally {
       await postgresClient.end();
@@ -59,10 +59,10 @@ export const notesRoute = new Hono()
         [c.user!.user_id, title, body]
       );
       
-      return c.json({ note_id: res.rows[0].note_id });
+      return c.json({ success: true, note_id: res.rows[0].note_id });
       
     } catch (err) {
-      return c.json({ error: 'Internal Server Error' }, 500);
+      return c.json({ success: false, error: 'Internal Server Error' }, 500);
       
     } finally {
       await postgresClient.end();
@@ -84,13 +84,13 @@ export const notesRoute = new Hono()
       );
       
       if (res.rowCount === 0) {
-        return c.json({ error: 'Note not found or unauthorized' }, 404);
+        return c.json({ success: false, error: 'Note not found or unauthorized' }, 404);
       }
       
       return c.json({ success: true });
       
     } catch (err) {
-      return c.json({ error: 'Internal Server Error' }, 500);
+      return c.json({ success: false, error: 'Internal Server Error' }, 500);
       
     } finally {
       await postgresClient.end();
@@ -113,13 +113,13 @@ export const notesRoute = new Hono()
     );
     
     if (res.rowCount === 0) {
-      return c.json({ error: 'Note not found or unauthorized' }, 404);
+      return c.json({ success: false, error: 'Note not found or unauthorized' }, 404);
     }
     
     return c.json({ success: true });
     
   } catch (err) {
-    return c.json({ error: 'Internal Server Error' }, 500);
+    return c.json({ success: false, error: 'Internal Server Error' }, 500);
     
   } finally {
     await postgresClient.end();

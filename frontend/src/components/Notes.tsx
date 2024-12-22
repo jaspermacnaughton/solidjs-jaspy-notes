@@ -17,7 +17,11 @@ export default function Notes() {
         'Authorization': `Bearer ${auth.token()}`
       }
     });
-    return handleApiResponse(response, auth.logout);
+    const data = await handleApiResponse(response, auth.logout);
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to fetch notes');
+    }
+    return data.notes;
   };
   
   const [notes, { mutate }] = createResource(() => 

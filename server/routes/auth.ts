@@ -41,7 +41,7 @@ export const authRoute = new Hono()
     );
 
     if (existingUser.rows.length > 0) {
-      return c.json({ error: 'Username already exists' }, 400);
+      return c.json({ success: false, error: 'Username already exists' }, 400);
     }
 
     const res = await postgresClient.query(
@@ -79,7 +79,7 @@ export const authRoute = new Hono()
     );
 
     if (res.rows.length === 0) {
-      return c.json({ error: 'Invalid credentials' }, 401);
+      return c.json({ success: false, error: 'Invalid credentials' }, 401);
     }
 
     return c.json({ 
