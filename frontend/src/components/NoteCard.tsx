@@ -5,12 +5,13 @@ type NoteCardProps = {
   title: string,
   body: string,
   onDelete: (note_id: number) => void;
+  onEdit: (note_id: number) => void;
 }
 
 const NoteCard: Component<NoteCardProps> = (props) => {
   return (
-    <div class="bg-white pt-2 p-4 ml-0 mb-0 m-4 text-center rounded-md shadow-md">
-      <div class="flex items-center justify-between w-full">
+    <div class="bg-white p-2 ml-0 mb-0 m-4 text-center rounded-md shadow-md">
+      <div class="flex items-center justify-between w-full mb-1">
         <div class="w-6"></div>
         <h2 class="flex-grow"><b>{props.title}</b></h2>
         <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
@@ -22,6 +23,13 @@ const NoteCard: Component<NoteCardProps> = (props) => {
       <hr class="mb-2" />
       
       <p>{props.body}</p>
+      
+      <div class="flex items-center justify-end w-full mt-2">
+        <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+          onClick={() => props.onEdit(props.note_id)}>
+          edit
+        </span>
+      </div>
     </div>
   );
 };

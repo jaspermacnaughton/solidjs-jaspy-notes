@@ -84,6 +84,10 @@ export default function Notes() {
     }
   };
 
+  const editNote = async (idToEdit: number) => {
+    console.log(`Editing note ${idToEdit}`);
+  };
+
   return (
     <>
       <header class="my-4 p-2 flex items-center justify-between">
@@ -118,7 +122,7 @@ export default function Notes() {
           <div class="grid sticky-grid">
             <For each={notes()}>
               {(item) => (
-                <NoteCard note_id={item.note_id} title={item.title} body={item.body} onDelete={deleteNote}/>
+                <NoteCard note_id={item.note_id} title={item.title} body={item.body} onDelete={deleteNote} onEdit={editNote}/>
               )}
             </For>
           </div>
