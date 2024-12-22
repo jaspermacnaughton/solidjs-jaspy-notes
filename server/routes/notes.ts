@@ -95,5 +95,33 @@ export const notesRoute = new Hono()
     } finally {
       await postgresClient.end();
     }
-  });
-// .put
+  })
+.put('/', async (c: AuthedContext) => {
+  const postgresClient = getPostgresClient();
+  
+  try {
+    const { note_id, body } = await c.req.json();
+    const userId = c.user!.user_id;
+    
+    await postgresClient.connect();
+    
+    const res = await postgresClient.query(
+      `UPDATE public."Notes"
+      SET body = $1
+      WHERE note_id = $2 AND user_id = $3`,
+      [body, note_id, userId]
+    );
+    
+    if (res.rowCount === 0) {
+      return c.json({ error: 'Note not found or unauthorized' }, 404);
+    }
+    
+    return c.json({ success: true });
+    
+  } catch (err) {
+    return c.json({ error: 'Internal Server Error' }, 500);
+    
+  } finally {
+    await postgresClient.end();
+  }
+});

@@ -84,8 +84,33 @@ export default function Notes() {
     }
   };
 
-  const editNote = async (idToEdit: number) => {
-    console.log(`Editing note ${idToEdit}`);
+  const editNote = async (noteId: number, newBody: string) => {
+    setError(null);
+    
+    try {
+      const response = await fetch('api/notes', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token()}`
+        },
+        body: JSON.stringify({
+          note_id: noteId,
+          body: newBody
+        }),
+      });
+      
+      await handleApiResponse(response, auth.logout);
+      mutate((existingNotes = []) => {
+        return existingNotes.map((note: Note) => 
+          note.note_id === noteId 
+            ? { ...note, body: newBody }
+            : note
+        );
+      });
+    } catch (err: any) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -122,7 +147,7 @@ export default function Notes() {
           <div class="grid sticky-grid">
             <For each={notes()}>
               {(item) => (
-                <NoteCard note_id={item.note_id} title={item.title} body={item.body} onDelete={deleteNote} onEdit={editNote}/>
+                <NoteCard note_id={item.note_id} title={item.title} body={item.body} onDelete={deleteNote} onSaveEdit={editNote}/>
               )}
             </For>
           </div>
