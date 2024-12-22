@@ -12,7 +12,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
   const [isEditing, setIsEditing] = createSignal(false);
 
   return (
-    <div class="bg-white p-2 ml-0 mb-0 m-4 text-center rounded-md shadow-md">
+    <div class="bg-white p-2 ml-0 mb-0 m-4 text-center rounded-md shadow-md flex flex-col min-h-[150px]">
       <div class="flex items-center justify-between w-full mb-1">
         <div class="w-6"></div>
         <h2 class="flex-grow"><b>{props.title}</b></h2>
@@ -25,8 +25,8 @@ const NoteCard: Component<NoteCardProps> = (props) => {
       <hr class="mb-2" />
       
       {isEditing() ? (
-        <>
-          <textarea value={props.body} class="w-full bg-gray-50 border border-gray-300 rounded-md p-1" />
+        <div class="flex flex-col flex-grow">
+          <textarea value={props.body} class="w-full flex-grow bg-gray-50 border border-gray-300 rounded-md p-1" />
           <div class="flex items-center justify-end w-full mt-2">
             <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={() => {
@@ -36,17 +36,17 @@ const NoteCard: Component<NoteCardProps> = (props) => {
               save
             </span>
           </div>
-        </>
+        </div>
       ) : (
-        <>
-          <p>{props.body}</p>
+        <div class="flex flex-col flex-grow">
+          <p class="flex-grow">{props.body}</p>
           <div class="flex items-center justify-end w-full mt-2">
             <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={() => setIsEditing(true)}>
               edit
             </span>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
