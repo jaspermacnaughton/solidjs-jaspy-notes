@@ -27,6 +27,15 @@ const NoteCard: Component<NoteCardProps> = (props) => {
       
       {isEditing() ? (
         <div class="flex flex-col flex-grow">
+          <div class="flex items-center justify-end w-full mb-2">
+            <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+              onClick={() => {
+                setCurrentBody(props.body);
+                setIsEditing(false);
+              }}>
+              cancel
+            </span>
+          </div>
           <textarea 
             class="w-full flex-grow bg-gray-50 border border-gray-300 rounded-md p-1" 
             value={currentBody()}
