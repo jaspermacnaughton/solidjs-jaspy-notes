@@ -13,7 +13,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
   const [currentBody, setCurrentBody] = createSignal(props.body);
 
   return (
-    <div class="bg-white p-2 ml-0 mb-0 m-4 text-center rounded-md shadow-md flex flex-col min-h-[150px]">
+    <div class="bg-white p-2 mx-auto sm:mx-0 mb-0 m-4 text-center rounded-md shadow-md flex flex-col min-h-[150px] w-[95%] sm:w-full">
       <div class="flex items-center justify-between w-full mb-1">
         <div class="w-6"></div>
         <h2 class="flex-grow"><b>{props.title}</b></h2>

@@ -37,4 +37,5 @@ body {
 
 .sticky-grid {
   grid-template-columns: repeat(auto-fit, minmax(250px, 400px));
+  gap: 1rem;
 }
