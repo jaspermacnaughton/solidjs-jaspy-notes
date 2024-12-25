@@ -24,8 +24,9 @@ export default function Notes() {
     return data.notes;
   };
   
-  const [notes, { mutate }] = createResource(() => 
-    fetchNotes().catch(err => {
+  const [notes, { mutate }] = createResource(
+    () => auth.token(),
+    () => fetchNotes().catch(err => {
       setError(err.message);
       throw err;
     })
