@@ -31,7 +31,7 @@ export const notesRoute = new Hono()
         `SELECT note_id, title, body 
         FROM public."Notes" 
         WHERE user_id = $1 
-        ORDER BY note_id DESC`,
+        ORDER BY note_id ASC`,
         [c.user!.user_id]
       );
       
