@@ -119,21 +119,21 @@ export default function Notes() {
 
   return (
     <>
-      <header class="my-4 p-2 flex items-center justify-between">
-        <div class="invisible flex items-center gap-4"> {/* Invisible copy of the logout button for centering */}
-          <span>Welcome, {auth.username()}</span>
-          <div class="btn">
-            Logout
+      <header class="my-4 p-2">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div class="invisible hidden sm:flex items-center gap-2">
+            <span class="text-sm sm:text-base">Welcome, {auth.username()}</span>
+            <div class="btn text-sm sm:text-base">Logout</div>
           </div>
-        </div>
-        
-        <h1 class="text-3xl">Jaspy Notes</h1>
-        
-        <div class="flex items-center gap-4">
-          <span>Welcome, {auth.username()}</span>
-          <button onClick={() => auth.logout()} class="btn">
-            Logout
-          </button>
+          
+          <h1 class="text-2xl sm:text-3xl">Jaspy Notes</h1>
+          
+          <div class="flex items-center gap-2">
+            <span class="text-sm sm:text-base">Welcome, {auth.username()}</span>
+            <button onClick={() => auth.logout()} class="btn text-sm sm:text-base">
+              Logout
+            </button>
+          </div>
         </div>
       </header>
       
