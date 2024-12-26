@@ -168,7 +168,7 @@ export default function Notes() {
           fallback={<button class="w-12 h-12 m-4 p-0 btn text-xlg items-center justify-center" onClick={() => setIsAddingNewNote(true)}>+</button>}
         >
           
-          <div class="bg-white rounded-md shadow-md sm:float-right min-w-80 w-[95%] sm:w-1/4 flex flex-col mb-4 sm:mb-0 mx-auto sm:mx-0">
+          <div class="bg-white rounded-md shadow-md sm:float-right min-w-80 w-[95%] sm:w-1/4 flex flex-col mb-6 sm:mb-4 mx-auto sm:mx-0">
             
             <div class="flex items-center justify-between w-full">
               <div class="w-6"></div>
