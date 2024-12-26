@@ -53,6 +53,9 @@ export default function Notes() {
         return [...existingNotes, { note_id: data.note_id, title: newTitle(), body: newBody() }]
       });
       
+      setNewTitle("");
+      setNewBody("");
+      
     } catch (err: any) {
       setError(err.message);
     }
