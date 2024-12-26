@@ -43,7 +43,7 @@ export default function Notes() {
           'Authorization': `Bearer ${auth.token()}`
         },
         body: JSON.stringify({
-          title: newTitle(), 
+          title: newTitle(),
           body: newBody()
         }),
       });
@@ -205,4 +205,4 @@ export default function Notes() {
       </footer>
     </>
   );
-} 
+}
