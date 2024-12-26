@@ -53,7 +53,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
         </div>
       ) : (
         <div class="flex flex-col flex-grow">
-          <p class="flex-grow">{props.body}</p>
+          <p class="flex-grow whitespace-pre-wrap">{props.body}</p>
           <div class="flex items-center justify-end w-full mt-2">
             <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={() => setIsEditing(true)}>
