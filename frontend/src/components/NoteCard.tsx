@@ -27,7 +27,12 @@ const NoteCard: Component<NoteCardProps> = (props) => {
       
       {isEditing() ? (
         <div class="flex flex-col flex-grow">
-          <div class="flex items-center justify-end w-full mb-2">
+          <textarea 
+            class="w-full flex-grow bg-gray-50 border border-gray-300 rounded-md p-1" 
+            value={currentBody()}
+            onInput={(e) => setCurrentBody(e.currentTarget.value)}
+          />
+          <div class="flex items-center justify-between w-full mt-2">
             <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={() => {
                 setCurrentBody(props.body);
@@ -35,13 +40,6 @@ const NoteCard: Component<NoteCardProps> = (props) => {
               }}>
               cancel
             </span>
-          </div>
-          <textarea 
-            class="w-full flex-grow bg-gray-50 border border-gray-300 rounded-md p-1" 
-            value={currentBody()}
-            onInput={(e) => setCurrentBody(e.currentTarget.value)}
-          />
-          <div class="flex items-center justify-end w-full mt-2">
             <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={() => {
                 props.onSaveEdit(props.note_id, currentBody());
