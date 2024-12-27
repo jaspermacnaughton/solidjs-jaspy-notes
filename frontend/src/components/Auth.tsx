@@ -25,11 +25,14 @@ export default function Auth() {
 
   return (
     <div>
-      <header class="my-2 p-4 md:my-4 md:p-6 flex items-center justify-center">
+      <header class="my-2 p-4 md:my-4 md:p-6 flex flex-col items-center justify-center">
         <h1 class="text-2xl md:text-3xl mb-2 md:mb-4">Jaspy Notes</h1>
+        <p class="text-center text-sm text-gray-500">
+          <a href="https://www.linkedin.com/in/jaspermacnaughton" class="text-blue-500 underline">Jasper MacNaughton</a>'s sticky note app.
+        </p>
       </header>
       
-      <div class="flex min-h-full flex-col justify-center px-6 py-2 sm:py-12 lg:px-8">
+      <div class="flex min-h-full flex-col justify-center px-6 py-4 sm:py-2 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
           <h2 class="mt-10 text-center text-2xl font-bold leading-9">
             {isLogin() ? "Sign in to your account" : "Create a new account"}
