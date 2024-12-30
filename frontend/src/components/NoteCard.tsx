@@ -66,8 +66,8 @@ const NoteCard: Component<NoteCardProps> = (props) => {
               cancel
             </span>
             <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-              onClick={() => {
-                props.onSaveEdit(props.note_id, currentBody());
+              onClick={async () => {
+                await props.onSaveEdit(props.note_id, currentBody());
                 setIsEditing(false);
               }}>
               save
