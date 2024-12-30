@@ -29,14 +29,20 @@ const NoteCard: Component<NoteCardProps> = (props) => {
         <div class="flex flex-col flex-grow">
           {/* Editing note display*/}
           <textarea 
-            class="w-full flex-grow bg-gray-50 border border-gray-300 rounded-md p-1" 
+            class="w-full h-full bg-gray-50 border border-gray-300 rounded-md p-1 resize-none" 
             value={currentBody()}
             onInput={(e) => setCurrentBody(e.currentTarget.value)}
+            rows={currentBody().split('\n').length}
           />
           
           <div class="flex items-center gap-2 mt-2 p-1 border border-gray-200 rounded-md">
             <input type="checkbox" class="w-4 h-4" />
-            <textarea class="flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1">{props.body}</textarea>
+            <textarea 
+              class="flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none" 
+              rows={currentBody().split('\n').length}
+            >
+              {currentBody()}
+            </textarea>
             <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle">
               delete
             </span>
