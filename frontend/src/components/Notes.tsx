@@ -155,7 +155,7 @@ export default function Notes() {
           <div class="grid sticky-grid">
             <For each={notes()}>
               {(item) => (
-                <NoteCard note_id={item.note_id} title={item.title} body={item.body} onDelete={deleteNote} onSaveEdit={editNote}/>
+                <NoteCard note_id={item.note_id} title={item.title} body={item.body} sub_items={[{ text: "Subitem 1", isChecked: false }, { text: "Subitem 2\nSubitem 2 line 2", isChecked: true },]} onDelete={deleteNote} onSaveEdit={editNote}/>
               )}
             </For>
           </div>
