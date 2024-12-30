@@ -6,7 +6,7 @@ export interface Note {
 } 
 
 export interface Subitem {
-  subitem_id: number;
+  subitem_id?: number;
   note_id: number;
   text: string;
   is_checked: boolean;

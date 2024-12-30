@@ -1,9 +1,5 @@
 import { createSignal, type Component, For } from 'solid-js';
-
-type Subitem = {
-  text: string;
-  isChecked: boolean;
-}
+import { Subitem } from '../types/notes';
 
 type NoteCardProps = {
   note_id: number;
@@ -11,12 +7,22 @@ type NoteCardProps = {
   body: string;
   subitems: Subitem[];
   onDelete: (note_id: number) => void;
-  onSaveEdit: (note_id: number, body: string) => void;
+  onSaveEdit: (note_id: number, newBody: string, newSubitems: Subitem[]) => void;
 }
 
 const NoteCard: Component<NoteCardProps> = (props) => {
   const [isEditing, setIsEditing] = createSignal(false);
   const [currentBody, setCurrentBody] = createSignal(props.body);
+  const [currentSubitems, setCurrentSubitems] = createSignal([...props.subitems]);
+
+  const addSubitem = () => {
+    setCurrentSubitems([...currentSubitems(), { text: "", is_checked: false, note_id: props.note_id }]);
+  };
+
+  const handleSave = () => {
+    props.onSaveEdit(props.note_id, currentBody(), currentSubitems());
+    setIsEditing(false);
+  };
 
   return (
     <div class="bg-white p-2 mx-auto sm:mx-0 mb-0 m-4 text-center rounded-md shadow-md flex flex-col min-h-[150px] w-[95%] sm:w-full">
@@ -41,10 +47,10 @@ const NoteCard: Component<NoteCardProps> = (props) => {
           />
           
           <div class="flex flex-col gap-2 mt-2">
-            <For each={props.subitems}>
+            <For each={currentSubitems()}>
               {(subitem) => (
                 <div class="flex items-center gap-2 p-1 border border-gray-200 rounded-md">
-                  <input type="checkbox" class="w-4 h-4 m-2 mr-1" checked={subitem.isChecked} />
+                  <input type="checkbox" class="w-4 h-4 m-2 mr-1" checked={subitem.is_checked} />
                   <textarea class="flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none"
                     value={subitem.text}
                     rows={subitem.text.split('\n').length}
@@ -57,10 +63,6 @@ const NoteCard: Component<NoteCardProps> = (props) => {
             </For>
           </div>
           
-          <div class="mt-2 border border-gray-200 rounded-md hover:bg-neutral-800 hover:text-white cursor-pointer p-1">
-            +
-          </div>
-          
           <div class="flex items-center justify-between w-full mt-2">
             <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={() => {
@@ -70,10 +72,11 @@ const NoteCard: Component<NoteCardProps> = (props) => {
               cancel
             </span>
             <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-              onClick={async () => {
-                await props.onSaveEdit(props.note_id, currentBody());
-                setIsEditing(false);
-              }}>
+              onClick={addSubitem}>
+              add_circle
+            </span>
+            <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+              onClick={handleSave}>
               save
             </span>
           </div>
@@ -83,10 +86,10 @@ const NoteCard: Component<NoteCardProps> = (props) => {
           <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">{props.body}</p>
           
           <div class="flex flex-col gap-2 mt-2">
-            <For each={props.subitems}>
+            <For each={currentSubitems()}>
               {(subitem) => (
                 <div class="flex items-center gap-2 p-1 border border-gray-200 rounded-md">
-                  <input type="checkbox" class="w-4 h-4 m-2 mr-1" checked={subitem.isChecked} />
+                  <input type="checkbox" class="w-4 h-4 m-2 mr-1" checked={subitem.is_checked} />
                   <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">
                     {subitem.text}
                   </p>

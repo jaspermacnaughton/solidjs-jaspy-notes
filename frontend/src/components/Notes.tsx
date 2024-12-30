@@ -1,7 +1,7 @@
 import { createResource, createSignal, For, Show } from "solid-js";
 import NoteCard from "./NoteCard";
 import { useAuth } from "../context/AuthContext";
-import { Note } from '../types/notes';
+import { Note, Subitem } from '../types/notes';
 import { handleApiResponse } from "../utils/api";
 
 export default function Notes() {
@@ -92,7 +92,7 @@ export default function Notes() {
     }
   };
 
-  const editNote = async (noteId: number, newBody: string) => {
+  const updateNote = async (noteId: number, newBody: string, newSubitems: Subitem[]) => {
     setError(null);
     
     try {
@@ -104,7 +104,8 @@ export default function Notes() {
         },
         body: JSON.stringify({
           note_id: noteId,
-          body: newBody
+          body: newBody,
+          subitems: newSubitems
         }),
       });
       
@@ -112,7 +113,7 @@ export default function Notes() {
       mutate((existingNotes = []) => {
         return existingNotes.map((note: Note) => 
           note.note_id === noteId 
-            ? { ...note, body: newBody }
+            ? { ...note, body: newBody, subitems: newSubitems }
             : note
         );
       });
@@ -161,7 +162,7 @@ export default function Notes() {
                   body={item.body} 
                   subitems={item.subitems} 
                   onDelete={deleteNote} 
-                  onSaveEdit={editNote}
+                  onSaveEdit={updateNote}
                 />
               )}
             </For>
