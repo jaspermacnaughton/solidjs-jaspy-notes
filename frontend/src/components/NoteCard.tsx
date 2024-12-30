@@ -19,6 +19,13 @@ const NoteCard: Component<NoteCardProps> = (props) => {
     setCurrentSubitems([...currentSubitems(), { text: "", is_checked: false, note_id: props.note_id }]);
   };
 
+  const updateSubitemText = (subitem: Subitem, newText: string) => {
+    const updatedSubitems = currentSubitems().map(item => 
+      item === subitem ? { ...item, text: newText } : item
+    );
+    setCurrentSubitems(updatedSubitems);
+  };
+
   const handleSave = () => {
     props.onSaveEdit(props.note_id, currentBody(), currentSubitems());
     setIsEditing(false);
@@ -54,6 +61,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
                   <textarea class="flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none"
                     value={subitem.text}
                     rows={subitem.text.split('\n').length}
+                    onfocusout={(e) => updateSubitemText(subitem, e.currentTarget.value)}
                   />
                   <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle">
                     delete
@@ -64,21 +72,21 @@ const NoteCard: Component<NoteCardProps> = (props) => {
           </div>
           
           <div class="flex items-center justify-between w-full mt-2">
-            <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+            <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={() => {
                 setCurrentBody(props.body);
                 setIsEditing(false);
               }}>
               cancel
-            </span>
-            <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+            </button>
+            <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={addSubitem}>
               add_circle
-            </span>
-            <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+            </button>
+            <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={handleSave}>
               save
-            </span>
+            </button>
           </div>
         </div>
       ) : (
@@ -99,10 +107,10 @@ const NoteCard: Component<NoteCardProps> = (props) => {
           </div>
           
           <div class="flex items-center justify-end w-full mt-2">
-            <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+            <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={() => setIsEditing(true)}>
               edit
-            </span>
+            </button>
           </div>
         </div>
       )}

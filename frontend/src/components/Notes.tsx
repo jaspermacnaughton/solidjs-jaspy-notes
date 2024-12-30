@@ -50,7 +50,12 @@ export default function Notes() {
       
       const data = await handleApiResponse(response, auth.logout);
       mutate((existingNotes = []) => {
-        return [...existingNotes, { note_id: data.note_id, title: newTitle(), body: newBody() }]
+        return [...existingNotes, { 
+          note_id: data.note_id, 
+          title: newTitle(), 
+          body: newBody(),
+          subitems: []
+        }]
       });
       
       setNewTitle("");
