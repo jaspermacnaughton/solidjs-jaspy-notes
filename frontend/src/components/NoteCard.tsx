@@ -1,6 +1,6 @@
 import { createSignal, type Component, For } from 'solid-js';
 
-type Sub_Item = {
+type Subitem = {
   text: string;
   isChecked: boolean;
 }
@@ -9,7 +9,7 @@ type NoteCardProps = {
   note_id: number;
   title: string,
   body: string,
-  sub_items: Sub_Item[],
+  subitems: Subitem[],
   onDelete: (note_id: number) => void;
   onSaveEdit: (note_id: number, body: string) => void;
 }
@@ -41,13 +41,13 @@ const NoteCard: Component<NoteCardProps> = (props) => {
           />
           
           <div class="flex flex-col gap-2 mt-2">
-            <For each={props.sub_items}>
-              {(sub_item) => (
+            <For each={props.subitems}>
+              {(subitem) => (
                 <div class="flex items-center gap-2 mt-2 p-1 border border-gray-200 rounded-md">
-                  <input type="checkbox" class="w-4 h-4" checked={sub_item.isChecked} />
+                  <input type="checkbox" class="w-4 h-4" checked={subitem.isChecked} />
                   <textarea class="flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none"
-                    value={sub_item.text}
-                    rows={sub_item.text.split('\n').length}
+                    value={subitem.text}
+                    rows={subitem.text.split('\n').length}
                   />
                   <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle">
                     delete
@@ -79,12 +79,12 @@ const NoteCard: Component<NoteCardProps> = (props) => {
           <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">{props.body}</p>
           
           <div class="flex flex-col gap-2 mt-2">
-            <For each={props.sub_items}>
-              {(sub_item) => (
+            <For each={props.subitems}>
+              {(subitem) => (
                 <div class="flex items-center gap-2 mt-2 p-1 border border-gray-200 rounded-md">
-                  <input type="checkbox" class="w-4 h-4" checked={sub_item.isChecked} />
+                  <input type="checkbox" class="w-4 h-4" checked={subitem.isChecked} />
                   <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">
-                    {sub_item.text}
+                    {subitem.text}
                   </p>
                 </div>
               )}
