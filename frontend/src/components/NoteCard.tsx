@@ -7,9 +7,9 @@ type Subitem = {
 
 type NoteCardProps = {
   note_id: number;
-  title: string,
-  body: string,
-  subitems: Subitem[],
+  title: string;
+  body: string;
+  subitems: Subitem[];
   onDelete: (note_id: number) => void;
   onSaveEdit: (note_id: number, body: string) => void;
 }
@@ -43,7 +43,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
           <div class="flex flex-col gap-2 mt-2">
             <For each={props.subitems}>
               {(subitem) => (
-                <div class="flex items-center gap-2 mt-2 p-1 border border-gray-200 rounded-md">
+                <div class="flex items-center gap-2 p-1 border border-gray-200 rounded-md">
                   <input type="checkbox" class="w-4 h-4 m-2 mr-1" checked={subitem.isChecked} />
                   <textarea class="flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none"
                     value={subitem.text}
@@ -55,6 +55,10 @@ const NoteCard: Component<NoteCardProps> = (props) => {
                 </div>
               )}
             </For>
+          </div>
+          
+          <div class="mt-2 border border-gray-200 rounded-md hover:bg-neutral-800 hover:text-white cursor-pointer p-1">
+            +
           </div>
           
           <div class="flex items-center justify-between w-full mt-2">
@@ -81,7 +85,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
           <div class="flex flex-col gap-2 mt-2">
             <For each={props.subitems}>
               {(subitem) => (
-                <div class="flex items-center gap-2 mt-2 p-1 border border-gray-200 rounded-md">
+                <div class="flex items-center gap-2 p-1 border border-gray-200 rounded-md">
                   <input type="checkbox" class="w-4 h-4 m-2 mr-1" checked={subitem.isChecked} />
                   <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">
                     {subitem.text}
