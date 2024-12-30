@@ -33,6 +33,15 @@ const NoteCard: Component<NoteCardProps> = (props) => {
             value={currentBody()}
             onInput={(e) => setCurrentBody(e.currentTarget.value)}
           />
+          
+          <div class="flex items-center gap-2 mt-2 p-1 border border-gray-200 rounded-md">
+            <input type="checkbox" class="w-4 h-4" />
+            <textarea class="flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1">{props.body}</textarea>
+            <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle">
+              delete
+            </span>
+          </div>
+          
           <div class="flex items-center justify-between w-full mt-2">
             <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={() => {
@@ -53,7 +62,13 @@ const NoteCard: Component<NoteCardProps> = (props) => {
       ) : (
         <div class="flex flex-col flex-grow">
           {/* Viewing note display*/}
-          <p class="flex-grow whitespace-pre-wrap text-left p-1 border border-transparent rounded-md">{props.body}</p>
+          <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">{props.body}</p>
+          
+          <div class="flex items-center gap-2 mt-2 p-1 border border-gray-200 rounded-md">
+            <input type="checkbox" class="w-4 h-4" />
+            <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">{props.body}</p>
+          </div>
+          
           <div class="flex items-center justify-end w-full mt-2">
             <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
               onClick={() => setIsEditing(true)}>
