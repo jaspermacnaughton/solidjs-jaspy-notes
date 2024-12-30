@@ -11,6 +11,15 @@ const noteSchema = z.object({
   body: z.string()
 })
 
+const updateNoteSchema = z.object({
+  note_id: z.number().int(),
+  body: z.string(),
+  subitems: z.array(z.object({
+    text: z.string(),
+    is_checked: z.boolean()
+  }))
+});
+
 const createNoteSchema = noteSchema.omit({
   note_id: true
 });
@@ -112,32 +121,74 @@ export const notesRoute = new Hono()
       await postgresClient.end();
     }
   })
-.put('/', async (c: AuthedContext) => {
-  const postgresClient = getPostgresClient();
-  
-  try {
-    const { note_id, body } = await c.req.json();
-    const userId = c.user!.user_id;
+  .put('/', zValidator('json', updateNoteSchema), async (c: AuthedContext) => {
+    const postgresClient = getPostgresClient();
     
-    await postgresClient.connect();
-    
-    const res = await postgresClient.query(
-      `UPDATE public."Notes"
-      SET body = $1
-      WHERE note_id = $2 AND user_id = $3`,
-      [body, note_id, userId]
-    );
-    
-    if (res.rowCount === 0) {
-      return c.json({ success: false, error: 'Note not found or unauthorized' }, 404);
+    try {
+      const { note_id, body, subitems } = await c.req.json();
+      
+      await postgresClient.connect();
+      
+      // Start a transaction since we're doing multiple operations
+      await postgresClient.query('BEGIN');
+      
+      // First verify the note belongs to the user
+      const noteExistsCheck = await postgresClient.query(
+        `SELECT note_id FROM public."Notes" 
+        WHERE note_id = $1 AND user_id = $2`,
+        [note_id, c.user!.user_id]
+      );
+      
+      if (noteExistsCheck.rows.length === 0) {
+        await postgresClient.query('ROLLBACK');
+        return c.json({ success: false, error: 'Note not found or unauthorized' }, 404);
+      }
+      
+      // Update the note body
+      await postgresClient.query(
+        `UPDATE public."Notes" 
+        SET body = $1 
+        WHERE note_id = $2`,
+        [body, note_id]
+      );
+      
+      // Delete all existing subitems for this note
+      await postgresClient.query(
+        `DELETE FROM public."Subitems" 
+        WHERE note_id = $1`,
+        [note_id]
+      );
+      
+      // Insert all new/updated subitems
+      if (subitems.length > 0) {
+        // Create placeholders for each subitem: (note_id, text, is_checked)
+        const values = subitems.map((_: { text: string, is_checked: boolean }, index: number) => {
+          const textParam = index * 2 + 2;        // 2, 4, 6, etc.
+          const checkedParam = index * 2 + 3;     // 3, 5, 7, etc.
+          return `($1, $${textParam}, $${checkedParam})`;
+        }).join(', ');
+        
+        const params = [note_id];
+        subitems.forEach((item: { text: string, is_checked: boolean }) => {
+          params.push(item.text, item.is_checked);
+        });
+        
+        await postgresClient.query(
+          `INSERT INTO public."Subitems" (note_id, text, is_checked)
+          VALUES ${values}`,
+          params
+        );
+      }
+      
+      await postgresClient.query('COMMIT');
+      
+      return c.json({ success: true });
+      
+    } catch (err) {
+      await postgresClient.query('ROLLBACK');
+      return c.json({ success: false, error: 'Internal Server Error' }, 500);
+      
+    } finally {
+      await postgresClient.end();
     }
-    
-    return c.json({ success: true });
-    
-  } catch (err) {
-    return c.json({ success: false, error: 'Internal Server Error' }, 500);
-    
-  } finally {
-    await postgresClient.end();
-  }
-});
+  });
