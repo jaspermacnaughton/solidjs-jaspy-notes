@@ -44,7 +44,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
             <For each={props.subitems}>
               {(subitem) => (
                 <div class="flex items-center gap-2 mt-2 p-1 border border-gray-200 rounded-md">
-                  <input type="checkbox" class="w-4 h-4" checked={subitem.isChecked} />
+                  <input type="checkbox" class="w-4 h-4 m-2 mr-1" checked={subitem.isChecked} />
                   <textarea class="flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none"
                     value={subitem.text}
                     rows={subitem.text.split('\n').length}
@@ -82,7 +82,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
             <For each={props.subitems}>
               {(subitem) => (
                 <div class="flex items-center gap-2 mt-2 p-1 border border-gray-200 rounded-md">
-                  <input type="checkbox" class="w-4 h-4" checked={subitem.isChecked} />
+                  <input type="checkbox" class="w-4 h-4 m-2 mr-1" checked={subitem.isChecked} />
                   <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">
                     {subitem.text}
                   </p>
