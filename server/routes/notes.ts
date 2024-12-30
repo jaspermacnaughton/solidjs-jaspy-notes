@@ -27,15 +27,31 @@ export const notesRoute = new Hono()
     try {
       await postgresClient.connect();
       
-      const res = await postgresClient.query(
+      // First get all notes
+      const notesRes = await postgresClient.query(
         `SELECT note_id, title, body 
         FROM public."Notes" 
         WHERE user_id = $1 
         ORDER BY note_id ASC`,
         [c.user!.user_id]
       );
+
+      // Then get all subitems for these notes
+      const subitemsRes = await postgresClient.query(
+        `SELECT subitem_id, note_id, text, is_checked 
+        FROM public."Subitems" 
+        WHERE note_id = ANY($1)
+        ORDER BY subitem_id ASC`,
+        [notesRes.rows.map(note => note.note_id)]
+      );
+
+      // Combine notes with their subitems
+      const notes = notesRes.rows.map(note => ({
+        ...note,
+        subitems: subitemsRes.rows.filter(subitem => subitem.note_id === note.note_id)
+      }));
       
-      return c.json({ success: true, notes: res.rows });
+      return c.json({ success: true, notes });
       
     } catch (err) {
       return c.json({ success: false, error: 'Internal Server Error' }, 500);
