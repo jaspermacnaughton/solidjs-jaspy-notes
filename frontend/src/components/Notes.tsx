@@ -232,16 +232,18 @@ export default function Notes() {
             
             <hr />
               
-            <label class="text-left m-4 mb-1"><b>Title:</b></label>
+            <label class="text-left m-4 mb-1" for="newNoteTitle"><b>Title:</b></label>
             <input
+              id="newNoteTitle"
               class="bg-gray-50 border border-gray-300 rounded-md m-4 mt-0 p-1"
               placeholder="title"
               required value={newTitle()}
               onInput={(e) => setNewTitle(e.currentTarget.value)} 
             />
 
-            <label class="text-left m-4 mb-1"><b>Body:</b></label>
+            <label class="text-left m-4 mb-1" for="newNoteBody"><b>Body:</b></label>
             <textarea
+              id="newNoteBody"
               class="bg-gray-50 border border-gray-300 rounded-md m-4 mt-0 p-1 h-32" 
               placeholder="body"  
               required value={newBody()}
