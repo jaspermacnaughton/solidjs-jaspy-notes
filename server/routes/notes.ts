@@ -205,13 +205,9 @@ export const notesRoute = new Hono()
   .patch('/subitems/:subitem_id', zValidator('json', updateSubitemSchema), async (c: AuthedContext) => {
     const postgresClient = getPostgresClient();
     
-    console.log("Updating subitem");
-    
     try {
       const subitemId = Number(c.req.param('subitem_id'));
       const { is_checked } = await c.req.json();
-      
-      console.log(subitemId, is_checked);
       
       await postgresClient.connect();
       
