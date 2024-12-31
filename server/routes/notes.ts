@@ -73,7 +73,7 @@ export const notesRoute = new Hono()
       await postgresClient.end();
     }
   })
-  .post('/', async (c: AuthedContext) => {
+  .post('/', zValidator('json', createNoteSchema), async (c: AuthedContext) => {
     const postgresClient = getPostgresClient();
     
     try {
@@ -97,7 +97,7 @@ export const notesRoute = new Hono()
       await postgresClient.end();
     }
   })
-  .delete('/', async (c: AuthedContext) => {
+  .delete('/', zValidator('json', deleteNoteSchema), async (c: AuthedContext) => {
     const postgresClient = getPostgresClient();
     
     try {
