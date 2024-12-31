@@ -1,7 +1,7 @@
 import { createResource, createSignal, For, Show } from "solid-js";
 import NoteCard from "./NoteCard";
 import { useAuth } from "../context/AuthContext";
-import { Note, Subitem } from '../types/notes';
+import { Note, SubitemType } from '../types/notes';
 import { handleApiResponse } from "../utils/api";
 
 export default function Notes() {
@@ -97,7 +97,7 @@ export default function Notes() {
     }
   };
 
-  const updateNote = async (noteId: number, newBody: string, newSubitems: Subitem[]) => {
+  const updateNote = async (noteId: number, newBody: string, newSubitems: SubitemType[]) => {
     setError(null);
     
     try {

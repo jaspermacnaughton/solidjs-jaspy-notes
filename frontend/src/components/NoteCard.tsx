@@ -1,13 +1,14 @@
 import { createSignal, type Component, For } from 'solid-js';
-import { Subitem } from '../types/notes';
+import { SubitemType } from '../types/notes';
+import Subitem from './Subitem';
 
 type NoteCardProps = {
   note_id: number;
   title: string;
   body: string;
-  subitems: Subitem[];
+  subitems: SubitemType[];
   onDelete: (note_id: number) => void;
-  onSaveEdit: (note_id: number, newBody: string, newSubitems: Subitem[]) => void;
+  onSaveEdit: (note_id: number, newBody: string, newSubitems: SubitemType[]) => void;
   onUpdateSubitemCheckbox: (subitemId: number, isChecked: boolean) => Promise<void>;
 }
 
@@ -20,12 +21,12 @@ const NoteCard: Component<NoteCardProps> = (props) => {
     setCurrentSubitems([...currentSubitems(), { text: "", is_checked: false, note_id: props.note_id }]);
   };
 
-  const deleteSubitem = (subitem: Subitem) => {
+  const deleteSubitem = (subitem: SubitemType) => {
     const updatedSubitems = currentSubitems().filter(item => item !== subitem);
     setCurrentSubitems(updatedSubitems);
   };
 
-  const updateSubitemText = (subitem: Subitem, newText: string) => {
+  const updateSubitemText = (subitem: SubitemType, newText: string) => {
     const updatedSubitems = currentSubitems().map(item => 
       item === subitem ? { ...item, text: newText } : item
     );
@@ -37,7 +38,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
     setIsEditing(false);
   };
 
-  const toggleSubitem = async (subitem: Subitem) => {
+  const toggleSubitem = async (subitem: SubitemType) => {
     subitem.is_checked = !subitem.is_checked;
     
     if (!isEditing()) {
@@ -111,29 +112,12 @@ const NoteCard: Component<NoteCardProps> = (props) => {
         <div class="flex flex-col gap-2 mt-2">
           <For each={currentSubitems()}>
             {(subitem) => (
-              <div class="flex items-center gap-2 p-1 border border-gray-200 rounded-md">
-                <input 
-                  id={`subitem-${subitem.subitem_id}-checkbox`}
-                  type="checkbox" 
-                  class="w-4 h-4 m-2 mr-1 accent-emerald-600 cursor-pointer" 
-                  checked={subitem.is_checked}
-                  onChange={() => toggleSubitem(subitem)}
-                />
-                <textarea 
-                  id={`subitem-${subitem.subitem_id}-text`}
-                  class={`flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none ${
-                    subitem.is_checked ? 'line-through text-gray-500' : ''
-                  }`}
-                  value={subitem.text}
-                  rows={subitem.text.split('\n').length}
-                  onfocusout={(e) => updateSubitemText(subitem, e.currentTarget.value)}
-                />
-                <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-                  onClick={() => deleteSubitem(subitem)}
-                >
-                  delete
-                </span>
-              </div>
+              <Subitem
+                subitem={subitem}
+                onToggleCheckbox={toggleSubitem}
+                onUpdateText={updateSubitemText}
+                onDelete={deleteSubitem} 
+              />
             )}
           </For>
         </div>
