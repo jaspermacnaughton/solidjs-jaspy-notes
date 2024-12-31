@@ -114,13 +114,50 @@ export default function Notes() {
         }),
       });
       
-      await handleApiResponse(response, auth.logout);
+      const data = await handleApiResponse(response, auth.logout);
       mutate((existingNotes = []) => {
         return existingNotes.map((note: Note) => 
           note.note_id === noteId 
-            ? { ...note, body: newBody, subitems: newSubitems }
+            ? { 
+                ...note, 
+                body: newBody, 
+                // Merge existing subitems with new ones, using returned IDs
+                subitems: data.subitems 
+              }
             : note
         );
+      });
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const updateSubitemCheckbox = async (subitemId: number, isChecked: boolean) => {
+    setError(null);
+    
+    try {
+      const response = await fetch(`api/notes/subitems/${subitemId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token()}`
+        },
+        body: JSON.stringify({
+          is_checked: isChecked
+        }),
+      });
+      
+      await handleApiResponse(response, auth.logout);
+      
+      mutate((existingNotes = []) => {
+        return existingNotes.map((note: Note) => ({
+          ...note,
+          subitems: note.subitems.map(subitem => 
+            subitem.subitem_id === subitemId 
+              ? { ...subitem, is_checked: isChecked }
+              : subitem
+          )
+        }));
       });
     } catch (err: any) {
       setError(err.message);
@@ -168,6 +205,7 @@ export default function Notes() {
                   subitems={item.subitems} 
                   onDelete={deleteNote} 
                   onSaveEdit={updateNote}
+                  onUpdateSubitemCheckbox={updateSubitemCheckbox}
                 />
               )}
             </For>

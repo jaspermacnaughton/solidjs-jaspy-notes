@@ -28,6 +28,10 @@ const deleteNoteSchema = z.object({
   note_id: z.number().int()
 });
 
+const updateSubitemSchema = z.object({
+  is_checked: z.boolean()
+});
+
 export const notesRoute = new Hono()
   .use('/*', authMiddleware)
   .get('/', async (c: AuthedContext) => {
@@ -173,19 +177,68 @@ export const notesRoute = new Hono()
           params.push(item.text, item.is_checked);
         });
         
-        await postgresClient.query(
+        const newSubitemsRes = await postgresClient.query(
           `INSERT INTO public."Subitems" (note_id, text, is_checked)
-          VALUES ${values}`,
+          VALUES ${values}
+          RETURNING subitem_id, text, is_checked`,
           params
         );
+      
+        await postgresClient.query('COMMIT');
+        return c.json({ 
+          success: true, 
+          subitems: newSubitemsRes.rows 
+        });
       }
       
       await postgresClient.query('COMMIT');
+      return c.json({ success: true, subitems: [] });
+      
+    } catch (err) {
+      await postgresClient.query('ROLLBACK');
+      return c.json({ success: false, error: 'Internal Server Error' }, 500);
+      
+    } finally {
+      await postgresClient.end();
+    }
+  })
+  .patch('/subitems/:subitem_id', zValidator('json', updateSubitemSchema), async (c: AuthedContext) => {
+    const postgresClient = getPostgresClient();
+    
+    console.log("Updating subitem");
+    
+    try {
+      const subitemId = Number(c.req.param('subitem_id'));
+      const { is_checked } = await c.req.json();
+      
+      console.log(subitemId, is_checked);
+      
+      await postgresClient.connect();
+      
+      // First verify the subitem belongs to a note owned by the user
+      const verifyRes = await postgresClient.query(
+        `SELECT s.subitem_id 
+         FROM public."Subitems" s
+         JOIN public."Notes" n ON s.note_id = n.note_id
+         WHERE s.subitem_id = $1 AND n.user_id = $2`,
+        [subitemId, c.user!.user_id]
+      );
+      
+      if (verifyRes.rows.length === 0) {
+        return c.json({ success: false, error: 'Subitem not found or unauthorized' }, 404);
+      }
+      
+      // Update the subitem
+      await postgresClient.query(
+        `UPDATE public."Subitems" 
+         SET is_checked = $1 
+         WHERE subitem_id = $2`,
+        [is_checked, subitemId]
+      );
       
       return c.json({ success: true });
       
     } catch (err) {
-      await postgresClient.query('ROLLBACK');
       return c.json({ success: false, error: 'Internal Server Error' }, 500);
       
     } finally {

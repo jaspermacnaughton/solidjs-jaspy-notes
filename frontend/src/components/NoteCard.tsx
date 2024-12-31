@@ -8,6 +8,7 @@ type NoteCardProps = {
   subitems: Subitem[];
   onDelete: (note_id: number) => void;
   onSaveEdit: (note_id: number, newBody: string, newSubitems: Subitem[]) => void;
+  onUpdateSubitemCheckbox: (subitemId: number, isChecked: boolean) => Promise<void>;
 }
 
 const NoteCard: Component<NoteCardProps> = (props) => {
@@ -29,6 +30,22 @@ const NoteCard: Component<NoteCardProps> = (props) => {
   const handleSave = () => {
     props.onSaveEdit(props.note_id, currentBody(), currentSubitems());
     setIsEditing(false);
+  };
+
+  const toggleSubitem = async (subitem: Subitem) => {
+    subitem.is_checked = !subitem.is_checked;
+    
+    if (!isEditing()) {
+      try {
+        if (subitem.subitem_id !== undefined) {
+          // If the subitem has an ID, update the checkbox on the backend
+          await props.onUpdateSubitemCheckbox(subitem.subitem_id, subitem.is_checked);
+        }
+      } catch (error) {
+        // Revert the checkbox if the API call fails
+        subitem.is_checked = !subitem.is_checked;
+      }
+    }
   };
 
   return (
@@ -57,8 +74,16 @@ const NoteCard: Component<NoteCardProps> = (props) => {
             <For each={currentSubitems()}>
               {(subitem) => (
                 <div class="flex items-center gap-2 p-1 border border-gray-200 rounded-md">
-                  <input type="checkbox" class="w-4 h-4 m-2 mr-1" checked={subitem.is_checked} />
-                  <textarea class="flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none"
+                  <input 
+                    type="checkbox" 
+                    class="w-4 h-4 m-2 mr-1 accent-emerald-600 cursor-pointer" 
+                    checked={subitem.is_checked}
+                    onChange={() => toggleSubitem(subitem)}
+                  />
+                  <textarea 
+                    class={`flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none ${
+                      subitem.is_checked ? 'line-through text-gray-500' : ''
+                    }`}
                     value={subitem.text}
                     rows={subitem.text.split('\n').length}
                     onfocusout={(e) => updateSubitemText(subitem, e.currentTarget.value)}
@@ -97,8 +122,15 @@ const NoteCard: Component<NoteCardProps> = (props) => {
             <For each={currentSubitems()}>
               {(subitem) => (
                 <div class="flex items-center gap-2 p-1 border border-gray-200 rounded-md">
-                  <input type="checkbox" class="w-4 h-4 m-2 mr-1" checked={subitem.is_checked} />
-                  <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">
+                  <input 
+                    type="checkbox" 
+                    class="w-4 h-4 m-2 mr-1 accent-emerald-600 cursor-pointer" 
+                    checked={subitem.is_checked}
+                    onChange={() => toggleSubitem(subitem)}
+                  />
+                  <p class={`flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1 ${
+                    subitem.is_checked ? 'line-through text-gray-500' : ''
+                  }`}>
                     {subitem.text}
                   </p>
                 </div>
