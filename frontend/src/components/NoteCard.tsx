@@ -32,8 +32,8 @@ const NoteCard: Component<NoteCardProps> = (props) => {
     setCurrentSubitems(updatedSubitems);
   };
 
-  const handleSave = () => {
-    props.onSaveEdit(props.note_id, currentBody(), currentSubitems());
+  const handleSave = async () => {
+    await props.onSaveEdit(props.note_id, currentBody(), currentSubitems());
     setIsEditing(false);
   };
 
