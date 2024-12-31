@@ -20,6 +20,11 @@ const NoteCard: Component<NoteCardProps> = (props) => {
     setCurrentSubitems([...currentSubitems(), { text: "", is_checked: false, note_id: props.note_id }]);
   };
 
+  const deleteSubitem = (subitem: Subitem) => {
+    const updatedSubitems = currentSubitems().filter(item => item !== subitem);
+    setCurrentSubitems(updatedSubitems);
+  };
+
   const updateSubitemText = (subitem: Subitem, newText: string) => {
     const updatedSubitems = currentSubitems().map(item => 
       item === subitem ? { ...item, text: newText } : item
@@ -88,7 +93,9 @@ const NoteCard: Component<NoteCardProps> = (props) => {
                     rows={subitem.text.split('\n').length}
                     onfocusout={(e) => updateSubitemText(subitem, e.currentTarget.value)}
                   />
-                  <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle">
+                  <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+                    onClick={() => deleteSubitem(subitem)}
+                  >
                     delete
                   </span>
                 </div>
