@@ -8,37 +8,60 @@ type NoteCardProps = {
   body: string;
   subitems: SubitemType[];
   onDelete: (note_id: number) => void;
-  onSaveEdit: (note_id: number, newBody: string, newSubitems: SubitemType[]) => void;
+  onSaveEdit: (note_id: number, newBody: string, newSubitems: SubitemType[]) => Promise<void>;
   onUpdateSubitemCheckbox: (subitemId: number, isChecked: boolean) => Promise<void>;
 }
 
 const NoteCard: Component<NoteCardProps> = (props) => {
   const [isEditing, setIsEditing] = createSignal(false);
   const [currentBody, setCurrentBody] = createSignal(props.body);
-  const [currentSubitems, setCurrentSubitems] = createSignal([...props.subitems]);
-
-  const addSubitem = () => {
-    setCurrentSubitems([...currentSubitems(), { text: "", is_checked: false, note_id: props.note_id }]);
+  const [currentSubitems, setCurrentSubitems] = createSignal([
+    ...props.subitems,
+    { text: "", is_checked: false, note_id: props.note_id }
+  ]);
+  
+  const saveBody = async () => {
+    await props.onSaveEdit(props.note_id, currentBody(), currentSubitems());
+    setIsEditing(false);
   };
-
+ 
+  const addNewSubitem = () => {
+    setCurrentSubitems([
+      ...currentSubitems(),
+      { text: "", is_checked: false, note_id: props.note_id }
+    ]);
+  }
+  
   const deleteSubitem = (subitem: SubitemType) => {
     const updatedSubitems = currentSubitems().filter(item => item !== subitem);
+    // Ensure we always have at least one empty item at the end
+    if (updatedSubitems[updatedSubitems.length - 1]?.text !== "") {
+      updatedSubitems.push({ text: "", is_checked: false, note_id: props.note_id });
+    }
     setCurrentSubitems(updatedSubitems);
   };
-
+  
+  // Existing subitem functions
   const updateSubitemText = (subitem: SubitemType, newText: string) => {
-    const updatedSubitems = currentSubitems().map(item => 
+    const index = currentSubitems().indexOf(subitem);
+    const isLastItem = index === currentSubitems().length - 1;
+
+    // If this is the last item and we're typing the first character
+    if (isLastItem && subitem.text === "" && newText.length === 1) {
+      setCurrentSubitems([
+        ...currentSubitems(),
+        { text: "", is_checked: false, note_id: props.note_id }
+      ]);
+    }
+
+    // Update the text of the current item
+    const updatedSubitems = currentSubitems().map(item =>
       item === subitem ? { ...item, text: newText } : item
     );
     setCurrentSubitems(updatedSubitems);
   };
 
-  const handleSave = async () => {
-    await props.onSaveEdit(props.note_id, currentBody(), currentSubitems());
-    setIsEditing(false);
-  };
-
-  const toggleSubitem = async (subitem: SubitemType) => {
+  const toggleSubitemCheckbox = async (subitem: SubitemType) => {
     subitem.is_checked = !subitem.is_checked;
     
     if (!isEditing()) {
@@ -87,11 +110,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
                 cancel
               </button>
               <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-                onClick={addSubitem}>
-                add_circle
-              </button>
-              <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-                onClick={handleSave}>
+                onClick={saveBody}>
                 save
               </button>
             </div>
@@ -111,12 +130,14 @@ const NoteCard: Component<NoteCardProps> = (props) => {
       
         <div class="flex flex-col gap-2 mt-2">
           <For each={currentSubitems()}>
-            {(subitem) => (
+            {(subitem, index) => (
               <Subitem
                 subitem={subitem}
-                onToggleCheckbox={toggleSubitem}
-                onUpdateText={updateSubitemText}
-                onDelete={deleteSubitem} 
+                isLast={index() === currentSubitems().length - 1}
+                onCheckboxToggled={toggleSubitemCheckbox}
+                onTextUpdated={updateSubitemText}
+                onLastSubitemTextAdded={addNewSubitem}
+                onDelete={deleteSubitem}
               />
             )}
           </For>

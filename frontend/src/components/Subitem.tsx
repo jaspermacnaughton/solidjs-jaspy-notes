@@ -1,11 +1,13 @@
-import { Component } from "solid-js";
+import { Component, Show } from "solid-js";
 import { SubitemType } from "../types/notes";
 
 type SubitemProps = {
   subitem: SubitemType;
-  onToggleCheckbox: (subitem: SubitemType) => void;
-  onUpdateText: (subitem: SubitemType, newText: string) => void;
-  onDelete: (subitem: SubitemType) => void;
+  isLast: boolean;
+  onCheckboxToggled: (subitem: SubitemType) => void;
+  onTextUpdated: (subitem: SubitemType, newText: string) => void;
+  onLastSubitemTextAdded: (subitem: SubitemType) => void;
+  onDelete?: (subitem: SubitemType) => void;
 }
 
 const Subitem: Component<SubitemProps> = (props) => {
@@ -16,8 +18,9 @@ const Subitem: Component<SubitemProps> = (props) => {
         type="checkbox" 
         class="w-4 h-4 m-2 mr-1 accent-emerald-600 cursor-pointer" 
         checked={props.subitem.is_checked}
-        onChange={() => props.onToggleCheckbox(props.subitem)}
+        onChange={() => props.onCheckboxToggled(props.subitem)}
       />
+      
       <textarea 
         id={`subitem-${props.subitem.subitem_id}-text`}
         class={`flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none ${
@@ -25,13 +28,18 @@ const Subitem: Component<SubitemProps> = (props) => {
         }`}
         value={props.subitem.text}
         rows={props.subitem.text.split('\n').length}
-        onfocusout={(e) => props.onUpdateText(props.subitem, e.currentTarget.value)}
+        onInput={(e) => (props.isLast && e.currentTarget.value.length === 1) ? props.onLastSubitemTextAdded(props.subitem) : null}
+        onfocusout={(e) => props.subitem.text !== e.currentTarget.value ? props.onTextUpdated(props.subitem, e.currentTarget.value) : null}
+        placeholder={props.isLast ? "Add new item..." : ""}
       />
-      <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-        onClick={() => props.onDelete(props.subitem)}
-      >
-        delete
-      </span>
+      
+      <Show when={!props.isLast}>
+        <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+          onClick={() => props.onDelete && props.onDelete(props.subitem)}
+        >
+          delete
+        </span>
+      </Show>
     </div>
   );
 };
