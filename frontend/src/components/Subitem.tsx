@@ -11,6 +11,19 @@ type SubitemProps = {
 }
 
 const Subitem: Component<SubitemProps> = (props) => {
+  
+  const handleTyping = (textValue: string) => {
+    if (props.isLast && textValue.length === 1) {
+      props.onLastSubitemTextAdded(props.subitem)
+    }
+  }
+  
+  const handleTextUpdate = (textValue: string) => {
+    if (props.subitem.text !== textValue) {
+      props.onTextUpdated(props.subitem, textValue)
+    }
+  }
+  
   return (
     <div class="flex items-center gap-2 p-1 border border-gray-200 rounded-md">
       <input 
@@ -28,9 +41,9 @@ const Subitem: Component<SubitemProps> = (props) => {
         }`}
         value={props.subitem.text}
         rows={props.subitem.text.split('\n').length}
-        onInput={(e) => (props.isLast && e.currentTarget.value.length === 1) ? props.onLastSubitemTextAdded(props.subitem) : null}
-        onfocusout={(e) => props.subitem.text !== e.currentTarget.value ? props.onTextUpdated(props.subitem, e.currentTarget.value) : null}
-        placeholder={props.isLast ? "Add new item..." : ""}
+        onInput={(e) => handleTyping(e.currentTarget.value)}
+        onfocusout={(e) => handleTextUpdate(e.currentTarget.value)}
+        placeholder={props.isLast ? "Add new..." : ""}
       />
       
       <Show when={!props.isLast}>
