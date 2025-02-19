@@ -10,6 +10,7 @@ export default function Notes() {
   const [isAddingNewNote, setIsAddingNewNote] = createSignal(true);
   const [newTitle, setNewTitle] = createSignal("");
   const [newBody, setNewBody] = createSignal("");
+  const [newNoteType, setNewNoteType] = createSignal<'freetext' | 'subitems'>('freetext');
   
   const fetchNotes = async () => {
     const response = await fetch("api/notes", {
@@ -329,6 +330,31 @@ export default function Notes() {
               required value={newTitle()}
               onInput={(e) => setNewTitle(e.currentTarget.value)} 
             />
+            
+            <div class="flex items-center justify-center gap-4 m-4">
+              <div class="inline-flex rounded-lg border border-gray-300 overflow-hidden">
+                <button
+                  class={`px-4 py-2 text-sm transition-colors ${
+                    newNoteType() === 'freetext'
+                      ? 'bg-gray-100 text-gray-900'
+                      : 'bg-white text-gray-500 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setNewNoteType('freetext')}
+                >
+                  Free Text
+                </button>
+                <button
+                  class={`px-4 py-2 text-sm transition-colors border-l ${
+                    newNoteType() === 'subitems'
+                      ? 'bg-gray-100 text-gray-900'
+                      : 'bg-white text-gray-500 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setNewNoteType('subitems')}
+                >
+                  Subitems
+                </button>
+              </div>
+            </div>
 
             <label class="text-left m-4 mb-1" for="newNoteBody"><b>Body:</b></label>
             <textarea
