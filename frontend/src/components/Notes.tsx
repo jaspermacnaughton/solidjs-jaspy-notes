@@ -310,7 +310,6 @@ export default function Notes() {
         >
           
           <div class="bg-white rounded-md shadow-md sm:float-right min-w-80 w-[95%] sm:w-1/4 flex flex-col mb-6 sm:mb-4 mx-auto sm:mx-0">
-            
             <div class="flex items-center justify-between w-full">
               <div class="w-6"></div>
               <h3 class="flex-grow text-center m-2 text-xl"><b>New Note</b></h3>
@@ -322,19 +321,18 @@ export default function Notes() {
             
             <hr />
               
-            <label class="text-left m-4 mb-1" for="newNoteTitle"><b>Title:</b></label>
             <input
               id="newNoteTitle"
-              class="bg-gray-50 border border-gray-300 rounded-md m-4 mt-0 p-1"
+              class="bg-gray-50 border border-gray-300 rounded-md m-4 p-1"
               placeholder="title"
               required value={newTitle()}
               onInput={(e) => setNewTitle(e.currentTarget.value)} 
             />
             
-            <div class="flex items-center justify-center gap-4 m-4">
-              <div class="inline-flex rounded-lg border border-gray-300 overflow-hidden">
+            <div class="flex items-center justify-center m-4 mt-2">
+              <div class="flex w-full rounded-lg border border-gray-300 overflow-hidden">
                 <button
-                  class={`px-4 py-2 text-sm transition-colors ${
+                  class={`flex-1 px-4 py-2 text-sm transition-colors ${
                     newNoteType() === 'freetext'
                       ? 'bg-gray-100 text-gray-900'
                       : 'bg-white text-gray-500 hover:bg-gray-50'
@@ -344,7 +342,7 @@ export default function Notes() {
                   Free Text
                 </button>
                 <button
-                  class={`px-4 py-2 text-sm transition-colors border-l ${
+                  class={`flex-1 px-4 py-2 text-sm transition-colors border-l ${
                     newNoteType() === 'subitems'
                       ? 'bg-gray-100 text-gray-900'
                       : 'bg-white text-gray-500 hover:bg-gray-50'
@@ -356,10 +354,9 @@ export default function Notes() {
               </div>
             </div>
 
-            <label class="text-left m-4 mb-1" for="newNoteBody"><b>Body:</b></label>
             <textarea
               id="newNoteBody"
-              class="bg-gray-50 border border-gray-300 rounded-md m-4 mt-0 p-1 h-32" 
+              class="bg-gray-50 border border-gray-300 rounded-md m-4 mt-2 p-1 h-32" 
               placeholder="body"  
               required value={newBody()}
               onInput={(e) => setNewBody(e.currentTarget.value)} 
