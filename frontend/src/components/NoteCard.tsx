@@ -28,32 +28,6 @@ const NoteCard: Component<NoteCardProps> = (props) => {
     await props.onSaveFreeTextEdits(props.note_id, currentBody());
     setIsEditing(false);
   };
- 
-  // const addNewSubitem = () => {
-  //   setCurrentSubitems([
-  //     ...currentSubitems(),
-  //     { text: "", is_checked: false, note_id: props.note_id }
-  //   ]);
-  // }
-  
-  // const updateSubitemText = (subitem: SubitemType, newText: string) => {
-  //   const index = currentSubitems().indexOf(subitem);
-  //   const isLastItem = index === currentSubitems().length - 1;
-
-  //   // If this is the last item and we're typing the first character
-  //   if (isLastItem && subitem.text === "" && newText.length === 1) {
-  //     setCurrentSubitems([
-  //       ...currentSubitems(),
-  //       { text: "", is_checked: false, note_id: props.note_id }
-  //     ]);
-  //   }
-
-  //   // Update the text of the current item
-  //   const updatedSubitems = currentSubitems().map(item =>
-  //     item === subitem ? { ...item, text: newText } : item
-  //   );
-  //   setCurrentSubitems(updatedSubitems);
-  // };
   
   const addNewSubitem = async (subitem: SubitemType) => {
     await props.onAddSubitem(props.note_id, subitem.text);
