@@ -148,10 +148,14 @@ export default function Notes() {
       const data = await handleApiResponse(response, auth.logout);
       
       mutate((existingNotes = []) => {
-        return existingNotes.map((note: Note) => ({
-          ...note,
-          subitems: [...note.subitems, { subitem_id: data.subitem_id, text: newText, is_checked: false, note_id: noteId }]
-        }));
+        return existingNotes.map((note: Note) => 
+          note.note_id === noteId
+            ? {
+                ...note,
+                subitems: [...note.subitems, { subitem_id: data.subitem_id, text: newText, is_checked: false, note_id: noteId }]
+              }
+            : note
+        );
       });
     } catch (err: any) {
       setError(err.message);
