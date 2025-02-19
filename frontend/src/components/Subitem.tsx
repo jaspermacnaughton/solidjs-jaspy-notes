@@ -44,7 +44,7 @@ const Subitem: Component<SubitemProps> = (props) => {
       />
       
       <Show when={!props.isLast}>
-        <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+        <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm mr-1 align-middle"
           onClick={() => props.onDelete && props.onDelete(props.subitem)}
         >
           delete
