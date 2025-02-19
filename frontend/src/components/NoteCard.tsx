@@ -29,8 +29,8 @@ const NoteCard: Component<NoteCardProps> = (props) => {
     setIsEditing(false);
   };
   
-  const addNewSubitem = async (subitem: SubitemType) => {
-    await props.onAddSubitem(props.note_id, subitem.text);
+  const addNewSubitem = async (newText: string) => {
+    await props.onAddSubitem(props.note_id, newText);
   }
 
   const handleSubitemCheckboxUpdate = async (subitem: SubitemType) => {
@@ -123,9 +123,9 @@ const NoteCard: Component<NoteCardProps> = (props) => {
               <Subitem
                 subitem={subitem}
                 isLast={index() === getSubitemsWithEmpty().length - 1}
+                onNewSubitemTextAdded={addNewSubitem}
+                onExistingSubitemTextUpdated={handleSubitemTextUpdate}
                 onCheckboxToggled={handleSubitemCheckboxUpdate}
-                onTextUpdated={handleSubitemTextUpdate}
-                onLastSubitemTextAdded={addNewSubitem}
                 onDelete={handleSubitemDelete}
               />
             )}

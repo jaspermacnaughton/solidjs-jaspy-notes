@@ -4,23 +4,21 @@ import { SubitemType } from "../types/notes";
 type SubitemProps = {
   subitem: SubitemType;
   isLast: boolean;
+  onNewSubitemTextAdded: (newText: string) => void;
+  onExistingSubitemTextUpdated: (subitem: SubitemType, newText: string) => void;
   onCheckboxToggled: (subitem: SubitemType) => void;
-  onTextUpdated: (subitem: SubitemType, newText: string) => void;
-  onLastSubitemTextAdded: (subitem: SubitemType) => void;
   onDelete?: (subitem: SubitemType) => void;
 }
 
 const Subitem: Component<SubitemProps> = (props) => {
-  
-  const handleTyping = (textValue: string) => {
-    if (props.isLast && textValue.length === 1) {
-      props.onLastSubitemTextAdded(props.subitem)
+  const handleTextUpdated = (textValue: string) => {
+    // If this is the last (blank) subitem we are typing in add that as a new subitem to the database
+    if (props.isLast && textValue.length > 0) {
+      props.onNewSubitemTextAdded(textValue)
     }
-  }
-  
-  const handleTextUpdate = (textValue: string) => {
+    // Only update an existing subitem in the database if the text has changed
     if (props.subitem.text !== textValue) {
-      props.onTextUpdated(props.subitem, textValue)
+      props.onExistingSubitemTextUpdated(props.subitem, textValue)
     }
   }
   
@@ -41,8 +39,7 @@ const Subitem: Component<SubitemProps> = (props) => {
         }`}
         value={props.subitem.text}
         rows={props.subitem.text.split('\n').length}
-        onInput={(e) => handleTyping(e.currentTarget.value)}
-        onfocusout={(e) => handleTextUpdate(e.currentTarget.value)}
+        onfocusout={(e) => handleTextUpdated(e.currentTarget.value)}
         placeholder={props.isLast ? "Add new..." : ""}
       />
       
