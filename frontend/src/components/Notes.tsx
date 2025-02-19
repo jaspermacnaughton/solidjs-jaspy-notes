@@ -1,7 +1,7 @@
 import { createResource, createSignal, For, Show } from "solid-js";
 import NoteCard from "./NoteCard";
 import { useAuth } from "../context/AuthContext";
-import { Note, SubitemType } from '../types/notes';
+import { Note } from '../types/notes';
 import { handleApiResponse } from "../utils/api";
 
 export default function Notes() {
@@ -97,7 +97,7 @@ export default function Notes() {
     }
   };
 
-  const updateNote = async (noteId: number, newBody: string, newSubitems: SubitemType[]) => {
+  const updateNote = async (noteId: number, newBody: string) => {
     setError(null);
     
     try {
@@ -109,23 +109,49 @@ export default function Notes() {
         },
         body: JSON.stringify({
           note_id: noteId,
-          body: newBody,
-          subitems: newSubitems
+          body: newBody
         }),
       });
       
-      const data = await handleApiResponse(response, auth.logout);
+      await handleApiResponse(response, auth.logout);
       mutate((existingNotes = []) => {
         return existingNotes.map((note: Note) => 
           note.note_id === noteId 
             ? { 
                 ...note, 
-                body: newBody, 
-                // Merge existing subitems with new ones, using returned IDs
-                subitems: data.subitems 
+                body: newBody,
               }
             : note
         );
+      });
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+  
+  const addNewSubitem = async (noteId: number, newText: string) => { 
+    setError(null);
+    
+    try {
+      const response = await fetch(`api/notes/subitems`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token()}`
+        },
+        body: JSON.stringify({
+          note_id: noteId,
+          text: newText
+        }),
+      });
+      
+      const data = await handleApiResponse(response, auth.logout);
+      
+      mutate((existingNotes = []) => {
+        return existingNotes.map((note: Note) => ({
+          ...note,
+          subitems: [...note.subitems, { subitem_id: data.subitem_id, text: newText, is_checked: false, note_id: noteId }]
+        }));
       });
     } catch (err: any) {
       setError(err.message);
@@ -136,7 +162,7 @@ export default function Notes() {
     setError(null);
     
     try {
-      const response = await fetch(`api/notes/subitems/${subitemId}`, {
+      const response = await fetch(`api/notes/subitems/checkbox/${subitemId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -157,6 +183,62 @@ export default function Notes() {
               ? { ...subitem, is_checked: isChecked }
               : subitem
           )
+        }));
+      });
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const updateSubitemText = async (subitemId: number, newText: string) => {
+    setError(null);
+    
+    try {
+      const response = await fetch(`api/notes/subitems/text/${subitemId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token()}`
+        },
+        body: JSON.stringify({
+          text: newText
+        }),
+      });
+      
+      await handleApiResponse(response, auth.logout);
+      
+      mutate((existingNotes = []) => {
+        return existingNotes.map((note: Note) => ({
+          ...note,
+          subitems: note.subitems.map(subitem => 
+            subitem.subitem_id === subitemId 
+              ? { ...subitem, text: newText }
+              : subitem
+          )
+        }));
+      });
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const deleteSubitem = async (subitemId: number) => {
+    setError(null);
+    
+    try {
+      const response = await fetch(`api/notes/subitems/${subitemId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${auth.token()}`
+        }
+      });
+      
+      await handleApiResponse(response, auth.logout);
+      
+      mutate((existingNotes = []) => {
+        return existingNotes.map((note: Note) => ({
+          ...note,
+          subitems: note.subitems.filter(subitem => subitem.subitem_id !== subitemId)
         }));
       });
     } catch (err: any) {
@@ -204,8 +286,11 @@ export default function Notes() {
                   body={item.body} 
                   subitems={item.subitems} 
                   onDelete={deleteNote} 
-                  onSaveEdit={updateNote}
+                  onSaveFreeTextEdits={updateNote}
+                  onAddSubitem={addNewSubitem}
                   onUpdateSubitemCheckbox={updateSubitemCheckbox}
+                  onUpdateSubitemText={updateSubitemText}
+                  onDeleteSubitem={deleteSubitem}
                 />
               )}
             </For>

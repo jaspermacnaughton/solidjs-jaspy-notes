@@ -14,10 +14,6 @@ const noteSchema = z.object({
 const updateNoteSchema = z.object({
   note_id: z.number().int(),
   body: z.string(),
-  subitems: z.array(z.object({
-    text: z.string(),
-    is_checked: z.boolean()
-  }))
 });
 
 const createNoteSchema = noteSchema.omit({
@@ -28,8 +24,18 @@ const deleteNoteSchema = z.object({
   note_id: z.number().int()
 });
 
-const updateSubitemSchema = z.object({
+const updateSubitemCheckboxSchema = z.object({
   is_checked: z.boolean()
+});
+
+const updateSubitemTextSchema = z.object({
+  text: z.string()
+});
+
+// Add schema for creating new subitems
+const createSubitemSchema = z.object({
+  note_id: z.number().int(),
+  text: z.string()
 });
 
 export const notesRoute = new Hono()
@@ -129,12 +135,9 @@ export const notesRoute = new Hono()
     const postgresClient = getPostgresClient();
     
     try {
-      const { note_id, body, subitems } = await c.req.json();
+      const { note_id, body } = await c.req.json();
       
       await postgresClient.connect();
-      
-      // Start a transaction since we're doing multiple operations
-      await postgresClient.query('BEGIN');
       
       // First verify the note belongs to the user
       const noteExistsCheck = await postgresClient.query(
@@ -144,7 +147,6 @@ export const notesRoute = new Hono()
       );
       
       if (noteExistsCheck.rows.length === 0) {
-        await postgresClient.query('ROLLBACK');
         return c.json({ success: false, error: 'Note not found or unauthorized' }, 404);
       }
       
@@ -156,58 +158,134 @@ export const notesRoute = new Hono()
         [body, note_id]
       );
       
-      // Delete all existing subitems for this note
-      await postgresClient.query(
-        `DELETE FROM public."Subitems" 
-        WHERE note_id = $1`,
-        [note_id]
-      );
-      
-      // Insert all new/updated subitems
-      if (subitems.length > 0) {
-        // Create placeholders for each subitem: (note_id, text, is_checked)
-        const values = subitems.map((_: { text: string, is_checked: boolean }, index: number) => {
-          const textParam = index * 2 + 2;        // 2, 4, 6, etc.
-          const checkedParam = index * 2 + 3;     // 3, 5, 7, etc.
-          return `($1, $${textParam}, $${checkedParam})`;
-        }).join(', ');
-        
-        const params = [note_id];
-        subitems.forEach((item: { text: string, is_checked: boolean }) => {
-          params.push(item.text, item.is_checked);
-        });
-        
-        const newSubitemsRes = await postgresClient.query(
-          `INSERT INTO public."Subitems" (note_id, text, is_checked)
-          VALUES ${values}
-          RETURNING subitem_id, text, is_checked`,
-          params
-        );
-      
-        await postgresClient.query('COMMIT');
-        return c.json({ 
-          success: true, 
-          subitems: newSubitemsRes.rows 
-        });
-      }
-      
-      await postgresClient.query('COMMIT');
-      return c.json({ success: true, subitems: [] });
+      return c.json({ success: true });
       
     } catch (err) {
-      await postgresClient.query('ROLLBACK');
       return c.json({ success: false, error: 'Internal Server Error' }, 500);
       
     } finally {
       await postgresClient.end();
     }
   })
-  .patch('/subitems/:subitem_id', zValidator('json', updateSubitemSchema), async (c: AuthedContext) => {
+  
+  .post('/subitems', zValidator('json', createSubitemSchema), async (c: AuthedContext) => {
+    const postgresClient = getPostgresClient();
+    
+    try {
+      const { note_id, text } = await c.req.json();
+      
+      await postgresClient.connect();
+      
+      // First verify the note belongs to the user
+      const noteExistsCheck = await postgresClient.query(
+        `SELECT note_id FROM public."Notes" 
+        WHERE note_id = $1 AND user_id = $2`,
+        [note_id, c.user!.user_id]
+      );
+      
+      if (noteExistsCheck.rows.length === 0) {
+        return c.json({ success: false, error: 'Note not found or unauthorized' }, 404);
+      }
+      
+      // Create the new subitem
+      const newSubitemRes = await postgresClient.query(
+        `INSERT INTO public."Subitems" (note_id, text, is_checked)
+        VALUES ($1, $2, false)
+        RETURNING subitem_id`,
+        [note_id, text]
+      );
+      
+      return c.json({ 
+        success: true, 
+        subitem_id: newSubitemRes.rows[0].subitem_id 
+      });
+      
+    } catch (err) {
+      return c.json({ success: false, error: 'Internal Server Error' }, 500);
+      
+    } finally {
+      await postgresClient.end();
+    }
+  })
+  .patch('/subitems/checkbox/:subitem_id', zValidator('json', updateSubitemCheckboxSchema), async (c: AuthedContext) => {
     const postgresClient = getPostgresClient();
     
     try {
       const subitemId = Number(c.req.param('subitem_id'));
-      const { is_checked } = await c.req.json();
+      const updateData = await c.req.json();
+      
+      await postgresClient.connect();
+      
+      // First verify the subitem belongs to a note owned by the user
+      const verifyRes = await postgresClient.query(
+        `SELECT s.subitem_id 
+         FROM public."Subitems" s
+         JOIN public."Notes" n ON s.note_id = n.note_id
+         WHERE s.subitem_id = $1 AND n.user_id = $2`,
+        [subitemId, c.user!.user_id]
+      );
+      
+      if (verifyRes.rows.length === 0) {
+        return c.json({ success: false, error: 'Subitem not found or unauthorized' }, 404);
+      }
+      await postgresClient.query(
+        `UPDATE public."Subitems" 
+          SET is_checked = $1 
+          WHERE subitem_id = $2`,
+        [updateData.is_checked, subitemId]
+      );
+      
+      return c.json({ success: true });
+      
+    } catch (err) {
+      return c.json({ success: false, error: 'Internal Server Error' }, 500);
+      
+    } finally {
+      await postgresClient.end();
+    }
+  })
+  .patch('/subitems/text/:subitem_id', zValidator('json', updateSubitemTextSchema), async (c: AuthedContext) => {
+    const postgresClient = getPostgresClient();
+    
+    try {
+      const subitemId = Number(c.req.param('subitem_id'));
+      const updateData = await c.req.json();
+      
+      await postgresClient.connect();
+      
+      // First verify the subitem belongs to a note owned by the user
+      const verifyRes = await postgresClient.query(
+        `SELECT s.subitem_id 
+         FROM public."Subitems" s
+         JOIN public."Notes" n ON s.note_id = n.note_id
+         WHERE s.subitem_id = $1 AND n.user_id = $2`,
+        [subitemId, c.user!.user_id]
+      );
+      
+      if (verifyRes.rows.length === 0) {
+        return c.json({ success: false, error: 'Subitem not found or unauthorized' }, 404);
+      }
+      await postgresClient.query(
+        `UPDATE public."Subitems" 
+          SET text = $1 
+          WHERE subitem_id = $2`,
+        [updateData.text, subitemId]
+      );
+      
+      return c.json({ success: true });
+      
+    } catch (err) {
+      return c.json({ success: false, error: 'Internal Server Error' }, 500);
+      
+    } finally {
+      await postgresClient.end();
+    }
+  })
+  .delete('/subitems/:subitem_id', async (c: AuthedContext) => {
+    const postgresClient = getPostgresClient();
+    
+    try {
+      const subitemId = Number(c.req.param('subitem_id'));
       
       await postgresClient.connect();
       
@@ -224,12 +302,11 @@ export const notesRoute = new Hono()
         return c.json({ success: false, error: 'Subitem not found or unauthorized' }, 404);
       }
       
-      // Update the subitem
+      // Delete the subitem
       await postgresClient.query(
-        `UPDATE public."Subitems" 
-         SET is_checked = $1 
-         WHERE subitem_id = $2`,
-        [is_checked, subitemId]
+        `DELETE FROM public."Subitems" 
+         WHERE subitem_id = $1`,
+        [subitemId]
       );
       
       return c.json({ success: true });
@@ -241,3 +318,4 @@ export const notesRoute = new Hono()
       await postgresClient.end();
     }
   });
+  

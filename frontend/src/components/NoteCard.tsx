@@ -8,72 +8,87 @@ type NoteCardProps = {
   body: string;
   subitems: SubitemType[];
   onDelete: (note_id: number) => void;
-  onSaveEdit: (note_id: number, newBody: string, newSubitems: SubitemType[]) => Promise<void>;
+  onSaveFreeTextEdits: (note_id: number, newBody: string) => Promise<void>;
+  onAddSubitem: (note_id: number, newText: string) => Promise<void>;
   onUpdateSubitemCheckbox: (subitemId: number, isChecked: boolean) => Promise<void>;
-}
+  onUpdateSubitemText: (subitemId: number, newText: string) => Promise<void>;
+  onDeleteSubitem: (subitemId: number) => Promise<void>;
+};
 
 const NoteCard: Component<NoteCardProps> = (props) => {
   const [isEditing, setIsEditing] = createSignal(false);
   const [currentBody, setCurrentBody] = createSignal(props.body);
-  const [currentSubitems, setCurrentSubitems] = createSignal([
+  
+  const getSubitemsWithEmpty = () => [
     ...props.subitems,
     { text: "", is_checked: false, note_id: props.note_id }
-  ]);
+  ];
   
   const saveBody = async () => {
-    await props.onSaveEdit(props.note_id, currentBody(), currentSubitems());
+    await props.onSaveFreeTextEdits(props.note_id, currentBody());
     setIsEditing(false);
   };
  
-  const addNewSubitem = () => {
-    setCurrentSubitems([
-      ...currentSubitems(),
-      { text: "", is_checked: false, note_id: props.note_id }
-    ]);
+  // const addNewSubitem = () => {
+  //   setCurrentSubitems([
+  //     ...currentSubitems(),
+  //     { text: "", is_checked: false, note_id: props.note_id }
+  //   ]);
+  // }
+  
+  // const updateSubitemText = (subitem: SubitemType, newText: string) => {
+  //   const index = currentSubitems().indexOf(subitem);
+  //   const isLastItem = index === currentSubitems().length - 1;
+
+  //   // If this is the last item and we're typing the first character
+  //   if (isLastItem && subitem.text === "" && newText.length === 1) {
+  //     setCurrentSubitems([
+  //       ...currentSubitems(),
+  //       { text: "", is_checked: false, note_id: props.note_id }
+  //     ]);
+  //   }
+
+  //   // Update the text of the current item
+  //   const updatedSubitems = currentSubitems().map(item =>
+  //     item === subitem ? { ...item, text: newText } : item
+  //   );
+  //   setCurrentSubitems(updatedSubitems);
+  // };
+  
+  const addNewSubitem = async (subitem: SubitemType) => {
+    await props.onAddSubitem(props.note_id, subitem.text);
   }
-  
-  const deleteSubitem = (subitem: SubitemType) => {
-    const updatedSubitems = currentSubitems().filter(item => item !== subitem);
-    // Ensure we always have at least one empty item at the end
-    if (updatedSubitems[updatedSubitems.length - 1]?.text !== "") {
-      updatedSubitems.push({ text: "", is_checked: false, note_id: props.note_id });
-    }
-    setCurrentSubitems(updatedSubitems);
-  };
-  
-  // Existing subitem functions
-  const updateSubitemText = (subitem: SubitemType, newText: string) => {
-    const index = currentSubitems().indexOf(subitem);
-    const isLastItem = index === currentSubitems().length - 1;
 
-    // If this is the last item and we're typing the first character
-    if (isLastItem && subitem.text === "" && newText.length === 1) {
-      setCurrentSubitems([
-        ...currentSubitems(),
-        { text: "", is_checked: false, note_id: props.note_id }
-      ]);
-    }
-
-    // Update the text of the current item
-    const updatedSubitems = currentSubitems().map(item =>
-      item === subitem ? { ...item, text: newText } : item
-    );
-    setCurrentSubitems(updatedSubitems);
-  };
-
-  const toggleSubitemCheckbox = async (subitem: SubitemType) => {
+  const handleSubitemCheckboxUpdate = async (subitem: SubitemType) => {
     subitem.is_checked = !subitem.is_checked;
     
-    if (!isEditing()) {
-      try {
-        if (subitem.subitem_id !== undefined) {
-          // If the subitem has an ID, update the checkbox on the backend
-          await props.onUpdateSubitemCheckbox(subitem.subitem_id, subitem.is_checked);
-        }
-      } catch (error) {
-        // Revert the checkbox if the API call fails
-        subitem.is_checked = !subitem.is_checked;
+    try {
+      if (subitem.subitem_id) {
+        await props.onUpdateSubitemCheckbox(subitem.subitem_id, subitem.is_checked);
       }
+    } catch (error) {
+      // Revert the checkbox if the API call fails
+      subitem.is_checked = !subitem.is_checked;
+    }
+  };
+
+  const handleSubitemTextUpdate = async (subitem: SubitemType, newText: string) => {
+    const oldText = subitem.text;
+    subitem.text = newText;
+    
+    try {
+      if (subitem.subitem_id) {
+        await props.onUpdateSubitemText(subitem.subitem_id, newText);
+      }
+    } catch (error) {
+      // Revert the text if the API call fails
+      subitem.text = oldText;
+    }
+  };
+
+  const handleSubitemDelete = async (subitem: SubitemType) => {
+    if (subitem.subitem_id) {
+      await props.onDeleteSubitem(subitem.subitem_id);
     }
   };
 
@@ -129,15 +144,15 @@ const NoteCard: Component<NoteCardProps> = (props) => {
         )}
       
         <div class="flex flex-col gap-2 mt-2">
-          <For each={currentSubitems()}>
+          <For each={getSubitemsWithEmpty()}>
             {(subitem, index) => (
               <Subitem
                 subitem={subitem}
-                isLast={index() === currentSubitems().length - 1}
-                onCheckboxToggled={toggleSubitemCheckbox}
-                onTextUpdated={updateSubitemText}
+                isLast={index() === getSubitemsWithEmpty().length - 1}
+                onCheckboxToggled={handleSubitemCheckboxUpdate}
+                onTextUpdated={handleSubitemTextUpdate}
                 onLastSubitemTextAdded={addNewSubitem}
-                onDelete={deleteSubitem}
+                onDelete={handleSubitemDelete}
               />
             )}
           </For>
