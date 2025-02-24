@@ -9,8 +9,8 @@ export default function Notes() {
   const [error, setError] = createSignal<string | null>(null);
   const [isAddingNewNote, setIsAddingNewNote] = createSignal(true);
   const [newTitle, setNewTitle] = createSignal("");
-  const [newBody, setNewBody] = createSignal("");
   const [newNoteType, setNewNoteType] = createSignal<'freetext' | 'subitems'>('freetext');
+  const [newBody, setNewBody] = createSignal("");
   
   const fetchNotes = async () => {
     const response = await fetch("api/notes", {
@@ -45,8 +45,8 @@ export default function Notes() {
         },
         body: JSON.stringify({
           title: newTitle(),
-          body: newBody(),
           note_type: newNoteType(),
+          body: newBody(),
         }),
       });
       
@@ -55,15 +55,15 @@ export default function Notes() {
         return [...existingNotes, { 
           note_id: data.note_id, 
           title: newTitle(), 
-          body: newBody(),
           note_type: newNoteType(),
+          body: newBody(),
           subitems: []
         }]
       });
       
       setNewTitle("");
-      setNewBody("");
       // keep new note type same as what user previously chose
+      setNewBody("");
       
     } catch (err: any) {
       setError(err.message);
