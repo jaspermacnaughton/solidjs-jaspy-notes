@@ -49,7 +49,7 @@ export const notesRoute = new Hono()
       
       // First get all notes
       const notesRes = await postgresClient.query(
-        `SELECT note_id, title, body 
+        `SELECT note_id, title, body, note_type
         FROM public."Notes" 
         WHERE user_id = $1 
         ORDER BY note_id ASC`,
