@@ -45,7 +45,8 @@ export default function Notes() {
         },
         body: JSON.stringify({
           title: newTitle(),
-          body: newBody()
+          body: newBody(),
+          note_type: newNoteType(),
         }),
       });
       
@@ -55,12 +56,14 @@ export default function Notes() {
           note_id: data.note_id, 
           title: newTitle(), 
           body: newBody(),
+          note_type: newNoteType(),
           subitems: []
         }]
       });
       
       setNewTitle("");
       setNewBody("");
+      // keep new note type same as what user previously chose
       
     } catch (err: any) {
       setError(err.message);

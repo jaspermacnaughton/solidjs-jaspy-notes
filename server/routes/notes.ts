@@ -8,7 +8,8 @@ import type { AuthedContext } from '../middleware/auth';
 const noteSchema = z.object({
   note_id: z.number().int(),
   title: z.string().min(3).max(255),
-  body: z.string()
+  body: z.string(),
+  note_type: z.enum(['freetext', 'subitems'])
 })
 
 const updateNoteSchema = z.object({
@@ -83,15 +84,15 @@ export const notesRoute = new Hono()
     const postgresClient = getPostgresClient();
     
     try {
-      const { title, body } = await c.req.json();
+      const { title, body, note_type } = await c.req.json();
       
       await postgresClient.connect();
       
       const res = await postgresClient.query(
-        `INSERT INTO public."Notes" (user_id, title, body) 
-        VALUES ($1, $2, $3)
+        `INSERT INTO public."Notes" (user_id, title, body, note_type) 
+        VALUES ($1, $2, $3, $4)
         RETURNING note_id`,
-        [c.user!.user_id, title, body]
+        [c.user!.user_id, title, body, note_type]
       );
       
       return c.json({ success: true, note_id: res.rows[0].note_id });
