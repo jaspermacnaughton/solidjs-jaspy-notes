@@ -3,6 +3,8 @@ import NoteCard from "./NoteCard";
 import { useAuth } from "../context/AuthContext";
 import { Note } from '../types/notes';
 import { handleApiResponse } from "../utils/api";
+import Subitem from "./Subitem";
+import { SubitemType } from '../types/notes';
 
 export default function Notes() {
   const auth = useAuth();
@@ -11,6 +13,7 @@ export default function Notes() {
   const [newTitle, setNewTitle] = createSignal("");
   const [newNoteType, setNewNoteType] = createSignal<'freetext' | 'subitems'>('freetext');
   const [newBody, setNewBody] = createSignal("");
+  const [newSubitems, setNewSubitems] = createSignal<SubitemType[]>([]);
   
   const fetchNotes = async () => {
     const response = await fetch("api/notes", {
@@ -32,6 +35,39 @@ export default function Notes() {
       throw err;
     })
   );
+  
+  const getNewNoteSubitemsWithEmpty = () => [
+    ...newSubitems(),
+    { text: "", is_checked: false, note_id: -1 }
+  ];
+
+  const handleNewNoteAddSubitem = (newText: string) => {
+    console.log("Adding subitem with: ", newText);
+    if (newText.trim()) {
+      setNewSubitems(items => [...items, { text: newText, is_checked: false, note_id: -1 }]);
+    }
+  };
+  
+  const handleNewNoteSubitemCheckboxUpdate = (subitem: SubitemType) => {
+    setNewSubitems(items => 
+      items.map(item => 
+        item === subitem ? { ...item, is_checked: !item.is_checked } : item
+      )
+    );
+  };
+
+  const handleNewNoteSubitemTextUpdate = (subitem: SubitemType, newText: string) => {
+    console.log("handleNewNoteSubitemTextUpdate() called with: ", newText);
+    setNewSubitems(items => 
+      items.map(item => 
+        item === subitem ? { ...item, text: newText } : item
+      )
+    );
+  };
+
+  const handleNewNoteSubitemDelete = (subitem: SubitemType) => {
+    setNewSubitems(items => items.filter(item => item !== subitem));
+  };
 
   const postNewNote = async () => {
     setError(null);
@@ -46,7 +82,8 @@ export default function Notes() {
         body: JSON.stringify({
           title: newTitle(),
           note_type: newNoteType(),
-          body: newBody(),
+          body: newNoteType() === 'freetext' ? newBody() : '',
+          subitems: newNoteType() === 'subitems' ? newSubitems() : [],
         }),
       });
       
@@ -56,14 +93,15 @@ export default function Notes() {
           note_id: data.note_id, 
           title: newTitle(), 
           note_type: newNoteType(),
-          body: newBody(),
-          subitems: []
+          body: newNoteType() === 'freetext' ? newBody() : '',
+          subitems: newNoteType() === 'subitems' ? newSubitems() : []
         }]
       });
       
       setNewTitle("");
       // keep new note type same as what user previously chose
       setNewBody("");
+      setNewSubitems([]);
       
     } catch (err: any) {
       setError(err.message);
@@ -358,13 +396,31 @@ export default function Notes() {
               </div>
             </div>
 
-            <textarea
-              id="newNoteBody"
-              class="bg-gray-50 border border-gray-300 rounded-md m-4 mt-2 p-1 h-32" 
-              placeholder="body"  
-              required value={newBody()}
-              onInput={(e) => setNewBody(e.currentTarget.value)} 
-            />
+            {newNoteType() === 'freetext' ? (
+              <textarea
+                id="newNoteBody"
+                class="bg-gray-50 border border-gray-300 rounded-md m-4 mt-2 p-1 h-32" 
+                placeholder="body"  
+                required 
+                value={newBody()}
+                onInput={(e) => setNewBody(e.currentTarget.value)} 
+              />
+            ) : (
+              <div class="flex flex-col gap-2 m-4 mt-2">
+                <For each={getNewNoteSubitemsWithEmpty()}>
+                  {(subitem, index) => (
+                    <Subitem
+                      subitem={subitem}
+                      isLast={index() === getNewNoteSubitemsWithEmpty().length - 1}
+                      onNewSubitemTextAdded={handleNewNoteAddSubitem}
+                      onExistingSubitemTextUpdated={handleNewNoteSubitemTextUpdate}
+                      onCheckboxToggled={handleNewNoteSubitemCheckboxUpdate}
+                      onDelete={handleNewNoteSubitemDelete}
+                    />
+                  )}
+                </For>
+              </div>
+            )}
               
               <div>
                 <button class="w-12 h-12 m-4 p-0 btn text-xlg items-center justify-center" onClick={postNewNote}>+</button>

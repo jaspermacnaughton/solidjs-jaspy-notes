@@ -17,8 +17,14 @@ const updateNoteSchema = z.object({
   body: z.string(),
 });
 
-const createNoteSchema = noteSchema.omit({
-  note_id: true
+const createNoteSchema = z.object({
+  title: z.string().min(3).max(255),
+  body: z.string().optional(),
+  note_type: z.enum(['freetext', 'subitems']),
+  subitems: z.array(z.object({
+    text: z.string(),
+    is_checked: z.boolean()
+  })).optional()
 });
 
 const deleteNoteSchema = z.object({
@@ -84,20 +90,49 @@ export const notesRoute = new Hono()
     const postgresClient = getPostgresClient();
     
     try {
-      const { title, body, note_type } = await c.req.json();
+      const { title, body, note_type, subitems } = await c.req.json();
       
       await postgresClient.connect();
       
-      const res = await postgresClient.query(
+      // Start transaction
+      await postgresClient.query('BEGIN');
+      
+      // Insert the note first
+      const noteRes = await postgresClient.query(
         `INSERT INTO public."Notes" (user_id, title, body, note_type) 
         VALUES ($1, $2, $3, $4)
         RETURNING note_id`,
         [c.user!.user_id, title, body, note_type]
       );
       
-      return c.json({ success: true, note_id: res.rows[0].note_id });
+      const noteId = noteRes.rows[0].note_id;
+      
+      // If it's a subitems note and subitems were provided, insert them
+      if (note_type === 'subitems' && subitems && subitems.length > 0) {
+        const subitemValues = subitems
+          .map((_: any, i: number) => `($1, $${i * 2 + 2}, $${i * 2 + 3})`)
+          .join(', ');
+        
+        const subitemParams = [noteId];
+        subitems.forEach((item: { text: string; is_checked: boolean; }) => {
+          subitemParams.push(item.text, item.is_checked);
+        });
+        
+        await postgresClient.query(
+          `INSERT INTO public."Subitems" (note_id, text, is_checked)
+          VALUES ${subitemValues}`,
+          subitemParams
+        );
+      }
+      
+      // Commit transaction
+      await postgresClient.query('COMMIT');
+      
+      return c.json({ success: true, note_id: noteId });
       
     } catch (err) {
+      // Rollback in case of error
+      await postgresClient.query('ROLLBACK');
       return c.json({ success: false, error: 'Internal Server Error' }, 500);
       
     } finally {
