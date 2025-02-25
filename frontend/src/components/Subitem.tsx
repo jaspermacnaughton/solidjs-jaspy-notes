@@ -25,7 +25,7 @@ const Subitem: Component<SubitemProps> = (props) => {
   return (
     <div class="flex items-center gap-2 p-1 border border-gray-200 rounded-md">
       <input 
-        id={`subitem-${props.subitem.subitem_id}-checkbox`}
+        id={props.isLast ? `note-${props.subitem.note_id}-blank-checkbox` : `subitem-${props.subitem.subitem_id}-checkbox`}
         type="checkbox" 
         class="w-4 h-4 m-2 mr-1 accent-emerald-600 cursor-pointer" 
         checked={props.subitem.is_checked}
@@ -33,7 +33,7 @@ const Subitem: Component<SubitemProps> = (props) => {
       />
       
       <textarea 
-        id={`subitem-${props.subitem.subitem_id}-text`}
+        id={props.isLast ? `note-${props.subitem.note_id}-blank-text` : `subitem-${props.subitem.subitem_id}-text`}
         class={`flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none ${
           props.subitem.is_checked ? 'line-through text-gray-500' : ''
         }`}
