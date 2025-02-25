@@ -17,7 +17,7 @@ const Subitem: Component<SubitemProps> = (props) => {
       props.onNewSubitemTextAdded(textValue)
     }
     // Only update an existing subitem in the database if the text has changed
-    if (props.subitem.text !== textValue) {
+    else if (props.subitem.text !== textValue) {
       props.onExistingSubitemTextUpdated(props.subitem, textValue)
     }
   }
