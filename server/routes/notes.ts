@@ -12,7 +12,7 @@ const noteSchema = z.object({
   note_type: z.enum(['freetext', 'subitems'])
 })
 
-const updateNoteSchema = z.object({
+const updateFreetextNoteSchema = z.object({
   note_id: z.number().int(),
   body: z.string(),
 });
@@ -171,7 +171,7 @@ export const notesRoute = new Hono()
       await postgresClient.end();
     }
   })
-  .put('/', zValidator('json', updateNoteSchema), async (c: AuthedContext) => {
+  .put('/', zValidator('json', updateFreetextNoteSchema), async (c: AuthedContext) => {
     const postgresClient = getPostgresClient();
     
     try {
