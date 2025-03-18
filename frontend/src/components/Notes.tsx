@@ -5,6 +5,16 @@ import { Note } from '../types/notes';
 import { handleApiResponse } from "../utils/api";
 import Subitem from "./Subitem";
 import { SubitemType } from '../types/notes';
+import { createSortable, DragDropProvider, DragDropSensors, SortableProvider, closestCenter } from "@thisbeyond/solid-dnd";
+
+// Needed so use:sortable doesn't throw linter errors
+declare module "solid-js" {
+  namespace JSX {
+    interface Directives {
+      sortable: boolean;
+    }
+  }
+}
 
 export default function Notes() {
   const auth = useAuth();
@@ -73,6 +83,8 @@ export default function Notes() {
     setError(null);
     
     try {
+      let newNoteDisplayOrder = notes().length;
+      
       const response = await fetch('api/notes', {
         method: 'POST',
         headers: {
@@ -84,6 +96,7 @@ export default function Notes() {
           note_type: newNoteType(),
           body: newNoteType() === 'freetext' ? newBody() : '',
           subitems: newNoteType() === 'subitems' ? newSubitems() : [],
+          display_order: newNoteDisplayOrder
         }),
       });
       
@@ -94,7 +107,8 @@ export default function Notes() {
           title: newTitle(), 
           note_type: newNoteType(),
           body: newNoteType() === 'freetext' ? newBody() : '',
-          subitems: newNoteType() === 'subitems' ? newSubitems() : []
+          subitems: newNoteType() === 'subitems' ? newSubitems() : [],
+          display_order: newNoteDisplayOrder
         }]
       });
       
@@ -131,7 +145,11 @@ export default function Notes() {
           throw new Error(`Failed to delete note ${idTodelete}`);
         }
         updatedNotes.splice(indexToDelete, 1);
-        return updatedNotes;
+        // Update display order for remaining notes
+        return updatedNotes.map((note, index) => ({
+          ...note,
+          display_order: index
+        }));
       });
       
     } catch (err: any) {
@@ -292,6 +310,52 @@ export default function Notes() {
     }
   };
 
+  const updateNoteOrder = async (noteIds: number[]) => {
+    setError(null);
+    
+    try {
+      const response = await fetch('api/notes/reorder', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token()}`
+        },
+        body: JSON.stringify({
+          note_ids: noteIds
+        }),
+      });
+      
+      await handleApiResponse(response, auth.logout);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleDragEnd = async (event: any) => {
+    if (!event.draggable || !event.droppable) return;
+    
+    const fromIndex = Number(event.draggable.id);
+    const toIndex = Number(event.droppable.id);
+    
+    if (fromIndex === toIndex) return;
+    
+    mutate((existingNotes = []) => {
+      const updatedNotes = [...existingNotes];
+      const [movedNote] = updatedNotes.splice(fromIndex, 1);
+      updatedNotes.splice(toIndex, 0, movedNote);
+      
+      // Update display_order for all notes
+      return updatedNotes.map((note, index) => ({
+        ...note,
+        display_order: index
+      }));
+    });
+    
+    // Get the reordered note IDs
+    const reorderedNoteIds = notes()?.map((note: Note) => note.note_id) || [];
+    await updateNoteOrder(reorderedNoteIds);
+  };
+
   return (
     <>
       <header class="my-4 p-2">
@@ -323,25 +387,45 @@ export default function Notes() {
           when={!notes.loading && !notes.error}
           fallback={<div>Loading...</div>}
         >
-          <div class="grid sticky-grid">
-            <For each={notes()}>
-              {(item) => (
-                <NoteCard 
-                  note_id={item.note_id} 
-                  title={item.title} 
-                  note_type={item.note_type}
-                  body={item.body} 
-                  subitems={item.subitems} 
-                  onDelete={deleteNote} 
-                  onSaveFreeTextEdits={updateNote}
-                  onAddSubitem={addNewSubitem}
-                  onUpdateSubitemCheckbox={updateSubitemCheckbox}
-                  onUpdateSubitemText={updateSubitemText}
-                  onDeleteSubitem={deleteSubitem}
-                />
-              )}
-            </For>
-          </div>
+          <DragDropProvider onDragEnd={handleDragEnd} collisionDetector={closestCenter}>
+            <DragDropSensors />
+            <SortableProvider ids={notes() ? Array.from({ length: notes().length }, (_, i) => i) : []}>
+              <div class="grid sticky-grid">
+                <For each={notes()}>
+                  {(item) => {
+                    const sortable = createSortable(item.display_order);
+                    return (
+                      <div
+                        use:sortable
+                        class="sortable-item"
+                        classList={{
+                          "opacity-25": sortable.isActiveDraggable,
+                          "transition-transform": !!sortable.transform,
+                        }}
+                        style={{
+                          transform: sortable.transform ? `translate(${sortable.transform.x}px, ${sortable.transform.y}px)` : undefined
+                        }}
+                      >
+                        <NoteCard 
+                          note_id={item.note_id} 
+                          title={item.title} 
+                          note_type={item.note_type}
+                          body={item.body} 
+                          subitems={item.subitems} 
+                          onDelete={deleteNote} 
+                          onSaveFreeTextEdits={updateNote}
+                          onAddSubitem={addNewSubitem}
+                          onUpdateSubitemCheckbox={updateSubitemCheckbox}
+                          onUpdateSubitemText={updateSubitemText}
+                          onDeleteSubitem={deleteSubitem}
+                        />
+                      </div>
+                    );
+                  }}
+                </For>
+              </div>
+            </SortableProvider>
+          </DragDropProvider>
         </Show>
       </main>
       

@@ -3,6 +3,7 @@ export interface Note {
   title: string;
   body: string;
   subitems: SubitemType[];
+  display_order: number;
 } 
 
 export interface SubitemType {

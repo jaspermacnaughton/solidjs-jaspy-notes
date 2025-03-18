@@ -19,12 +19,13 @@ const updateNoteSchema = z.object({
 
 const createNoteSchema = z.object({
   title: z.string().min(3).max(255),
-  body: z.string().optional(),
   note_type: z.enum(['freetext', 'subitems']),
+  body: z.string().optional(),
   subitems: z.array(z.object({
     text: z.string(),
     is_checked: z.boolean()
-  })).optional()
+  })).optional(),
+  display_order: z.number().int()
 });
 
 const deleteNoteSchema = z.object({
@@ -39,10 +40,13 @@ const updateSubitemTextSchema = z.object({
   text: z.string()
 });
 
-// Add schema for creating new subitems
 const createSubitemSchema = z.object({
   note_id: z.number().int(),
   text: z.string()
+});
+
+const reorderNotesSchema = z.object({
+  note_ids: z.array(z.number().int())
 });
 
 export const notesRoute = new Hono()
@@ -55,10 +59,10 @@ export const notesRoute = new Hono()
       
       // First get all notes
       const notesRes = await postgresClient.query(
-        `SELECT note_id, title, body, note_type
+        `SELECT note_id, title, body, note_type, display_order
         FROM public."Notes" 
         WHERE user_id = $1 
-        ORDER BY note_id ASC`,
+        ORDER BY display_order ASC`,
         [c.user!.user_id]
       );
 
@@ -90,7 +94,7 @@ export const notesRoute = new Hono()
     const postgresClient = getPostgresClient();
     
     try {
-      const { title, body, note_type, subitems } = await c.req.json();
+      const { title, body, note_type, subitems, display_order } = await c.req.json();
       
       await postgresClient.connect();
       
@@ -99,10 +103,10 @@ export const notesRoute = new Hono()
       
       // Insert the note first
       const noteRes = await postgresClient.query(
-        `INSERT INTO public."Notes" (user_id, title, body, note_type) 
-        VALUES ($1, $2, $3, $4)
+        `INSERT INTO public."Notes" (user_id, title, body, note_type, display_order) 
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING note_id`,
-        [c.user!.user_id, title, body, note_type]
+        [c.user!.user_id, title, body, note_type, display_order]
       );
       
       const noteId = noteRes.rows[0].note_id;
@@ -348,6 +352,52 @@ export const notesRoute = new Hono()
       return c.json({ success: true });
       
     } catch (err) {
+      return c.json({ success: false, error: 'Internal Server Error' }, 500);
+      
+    } finally {
+      await postgresClient.end();
+    }
+  })
+  .put('/reorder', zValidator('json', reorderNotesSchema), async (c: AuthedContext) => {
+    const postgresClient = getPostgresClient();
+    
+    try {
+      const { note_ids } = await c.req.json();
+      
+      await postgresClient.connect();
+      
+      // Start transaction
+      await postgresClient.query('BEGIN');
+      
+      // First verify all notes belong to the user
+      const noteCountRes = await postgresClient.query(
+        `SELECT COUNT(*) as count 
+         FROM public."Notes" 
+         WHERE note_id = ANY($1) AND user_id = $2`,
+        [note_ids, c.user!.user_id]
+      );
+      
+      if (Number(noteCountRes.rows[0].count) !== note_ids.length) {
+        await postgresClient.query('ROLLBACK');
+        return c.json({ success: false, error: 'One or more notes not found or unauthorized' }, 404);
+      }
+      
+      // Update the display_order for each note
+      for (let i = 0; i < note_ids.length; i++) {
+        await postgresClient.query(
+          `UPDATE public."Notes" 
+           SET display_order = $1 
+           WHERE note_id = $2 AND user_id = $3`,
+          [i, note_ids[i], c.user!.user_id]
+        );
+      }
+      
+      await postgresClient.query('COMMIT');
+      
+      return c.json({ success: true });
+      
+    } catch (err) {
+      await postgresClient.query('ROLLBACK');
       return c.json({ success: false, error: 'Internal Server Error' }, 500);
       
     } finally {
