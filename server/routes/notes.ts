@@ -383,15 +383,17 @@ export const notesRoute = new Hono()
       }
       
       // Update the display_order for each note
-      for (let i = 0; i < note_ids.length; i++) {
-        await postgresClient.query(
-          `UPDATE public."Notes" 
-           SET display_order = $1 
-           WHERE note_id = $2 AND user_id = $3`,
-          [i, note_ids[i], c.user!.user_id]
-        );
-      }
-      
+      await postgresClient.query(
+        `UPDATE public."Notes"
+        SET display_order = data.display_order
+        FROM (
+          SELECT note_id, index - 1 AS display_order
+          FROM unnest($1::integer[]) WITH ORDINALITY AS t(note_id, index)
+        ) AS data
+        WHERE public."Notes".note_id = data.note_id;`,
+        [note_ids]
+      );
+    
       await postgresClient.query('COMMIT');
       
       return c.json({ success: true });
