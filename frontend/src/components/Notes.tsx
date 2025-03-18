@@ -25,6 +25,8 @@ export default function Notes() {
   const [newBody, setNewBody] = createSignal("");
   const [newSubitems, setNewSubitems] = createSignal<SubitemType[]>([]);
   
+  const [activeDragId, setActiveDragId] = createSignal<number | null>(null);
+  
   const fetchNotes = async () => {
     const response = await fetch("api/notes", {
       headers: {
@@ -52,7 +54,6 @@ export default function Notes() {
   ];
 
   const handleNewNoteAddSubitem = (newText: string) => {
-    console.log("Adding subitem with: ", newText);
     if (newText.trim()) {
       setNewSubitems(items => [...items, { text: newText, is_checked: false, note_id: -1 }]);
     }
@@ -67,7 +68,6 @@ export default function Notes() {
   };
 
   const handleNewNoteSubitemTextUpdate = (subitem: SubitemType, newText: string) => {
-    console.log("handleNewNoteSubitemTextUpdate() called with: ", newText);
     setNewSubitems(items => 
       items.map(item => 
         item === subitem ? { ...item, text: newText } : item
@@ -331,7 +331,13 @@ export default function Notes() {
     }
   };
 
+  const handleDragStart = (event: any) => {
+    setActiveDragId(Number(event.draggable.id));
+  };
+
   const handleDragEnd = async (event: any) => {
+    setActiveDragId(null);
+    
     if (!event.draggable || !event.droppable) return;
     
     const fromIndex = Number(event.draggable.id);
@@ -387,23 +393,42 @@ export default function Notes() {
           when={!notes.loading && !notes.error}
           fallback={<div>Loading...</div>}
         >
-          <DragDropProvider onDragEnd={handleDragEnd} collisionDetector={closestCenter}>
+          <DragDropProvider onDragStart={handleDragStart} onDragEnd={handleDragEnd} collisionDetector={closestCenter}>
             <DragDropSensors />
+            <style>
+              {`
+                .sortable-item {
+                  transition: transform 250ms ease;
+                }
+                .sortable-item.active-draggable {
+                  z-index: 10;
+                  transition: none;
+                }
+                .sortable-item.transition-transform:not(.active-draggable) {
+                  transition: transform 250ms ease;
+                }
+                .sortable-ghost {
+                  opacity: 0.4;
+                }
+              `}
+            </style>
             <SortableProvider ids={notes() ? Array.from({ length: notes().length }, (_, i) => i) : []}>
               <div class="grid sticky-grid">
                 <For each={notes()}>
-                  {(item) => {
-                    const sortable = createSortable(item.display_order);
+                  {(item, index) => {
+                    const sortable = createSortable(index());
                     return (
                       <div
                         use:sortable
                         class="sortable-item"
                         classList={{
-                          "opacity-25": sortable.isActiveDraggable,
+                          "active-draggable": sortable.isActiveDraggable,
+                          "sortable-ghost": activeDragId() === index(),
                           "transition-transform": !!sortable.transform,
                         }}
                         style={{
-                          transform: sortable.transform ? `translate(${sortable.transform.x}px, ${sortable.transform.y}px)` : undefined
+                          transform: sortable.transform ? `translate(${sortable.transform.x}px, ${sortable.transform.y}px)` : undefined,
+                          "z-index": sortable.isActiveDraggable ? 10 : 1
                         }}
                       >
                         <NoteCard 
