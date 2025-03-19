@@ -393,12 +393,30 @@ export default function Notes() {
           when={!notes.loading && !notes.error}
           fallback={<div>Loading...</div>}
         >
-          <DragDropProvider onDragStart={handleDragStart} onDragEnd={handleDragEnd} collisionDetector={closestCenter}>
+          <DragDropProvider 
+            onDragStart={handleDragStart} 
+            onDragEnd={handleDragEnd} 
+            collisionDetector={closestCenter}
+            options={{
+              defaultSensors: [
+                {
+                  sensor: 'pointer',
+                  options: {
+                    activationConstraint: {
+                      delay: 250,
+                      tolerance: 5,
+                    },
+                  },
+                },
+              ],
+            }}
+          >
             <DragDropSensors />
             <style>
               {`
                 .sortable-item {
                   transition: transform 250ms ease;
+                  touch-action: none;
                 }
                 .sortable-item.active-draggable {
                   z-index: 10;
