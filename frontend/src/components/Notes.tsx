@@ -397,19 +397,6 @@ export default function Notes() {
             onDragStart={handleDragStart} 
             onDragEnd={handleDragEnd} 
             collisionDetector={closestCenter}
-            options={{
-              defaultSensors: [
-                {
-                  sensor: 'pointer',
-                  options: {
-                    activationConstraint: {
-                      delay: 250,
-                      tolerance: 5,
-                    },
-                  },
-                },
-              ],
-            }}
           >
             <DragDropSensors />
             <style>
