@@ -437,11 +437,11 @@ export default function Notes() {
                         }}
                       >
                         <NoteCard 
-                          note_id={item.note_id} 
-                          title={item.title} 
+                          note_id={item.note_id}
+                          title={item.title}
                           note_type={item.note_type}
-                          body={item.body} 
-                          subitems={item.subitems} 
+                          body={item.body}
+                          subitems={item.subitems}
                           onDelete={deleteNote} 
                           onSaveFreeTextEdits={updateNote}
                           onAddSubitem={addNewSubitem}
