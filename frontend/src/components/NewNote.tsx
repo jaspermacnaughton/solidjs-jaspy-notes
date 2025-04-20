@@ -1,9 +1,9 @@
 import { createSignal, For, Show } from "solid-js";
 
 import { useAuth } from "../context/AuthContext";
+import { handleApiResponse } from "../utils/api";
 import { Note, SubitemType } from '../types/notes';
 import Subitem from "./Subitem";
-import { handleApiResponse } from "../utils/api";
 
 interface NewNoteProps {
   onNoteAddedToDatabase: (newNote: Note) => void;

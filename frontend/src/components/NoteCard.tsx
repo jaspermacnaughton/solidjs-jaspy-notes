@@ -1,4 +1,5 @@
 import { createSignal, type Component, For } from 'solid-js';
+
 import { SubitemType } from '../types/notes';
 import Subitem from './Subitem';
 

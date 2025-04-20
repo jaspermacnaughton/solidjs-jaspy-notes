@@ -1,9 +1,10 @@
 import { createResource, createSignal, For, Show } from "solid-js";
-import NoteCard from "./NoteCard";
-import { useAuth } from "../context/AuthContext";
-import { Note } from '../types/notes';
-import { handleApiResponse } from "../utils/api";
 import { createSortable, DragDropProvider, DragDropSensors, SortableProvider, closestCenter } from "@thisbeyond/solid-dnd";
+
+import { useAuth } from "../context/AuthContext";
+import { handleApiResponse } from "../utils/api";
+import { Note } from '../types/notes';
+import NoteCard from "./NoteCard";
 import NewNote from "./NewNote";
 
 // Needed so use:sortable doesn't throw linter errors
