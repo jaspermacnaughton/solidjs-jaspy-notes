@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@thisbeyond/solid-dnd": "^0.7.5",
-    "caniuse-lite": "^1.0.30001713",
+    "caniuse-lite": "^1.0.30001715",
     "solid-js": "^1.9.1"
   },
   "devDependencies": {
