@@ -1,6 +1,7 @@
 export interface Note {
   note_id: number;
   title: string;
+  note_type: 'freetext' | 'subitems';
   body: string;
   subitems: SubitemType[];
   display_order: number;
