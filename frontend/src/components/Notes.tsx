@@ -306,11 +306,11 @@ export default function Notes() {
         </div>
       </header>
       
-      {error() && (
+      <Show when={error()}>
         <div class="text-red-500 bg-red-200 px-4 py-2 mb-2 rounded">
           Error: {error()}
         </div>
-      )}
+      </Show>
       
       <main class="flex-1">
         <Show

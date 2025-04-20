@@ -111,6 +111,12 @@ export default function NewNote(props: NewNoteProps) {
         </div>
         
         <hr />
+        
+        <Show when={error()}>
+          <div class="text-red-500 bg-red-200 px-4 py-2 mb-2 rounded m-4 p-1">
+            Error: {error()}
+          </div>
+        </Show>
           
         <input
           id="newNoteTitle"
