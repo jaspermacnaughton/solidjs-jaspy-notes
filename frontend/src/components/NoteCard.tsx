@@ -5,9 +5,9 @@ import Subitem from './Subitem';
 
 type NoteCardProps = {
   note: Note;
-  onDelete: (note_id: number) => void;
-  onSaveFreeTextEdits: (note_id: number, newBody: string) => Promise<void>;
-  onAddSubitem: (note_id: number, newText: string) => Promise<void>;
+  onDelete: (noteId: number) => void;
+  onSaveFreeTextEdits: (noteId: number, newBody: string) => Promise<void>;
+  onAddSubitem: (noteId: number, newText: string) => Promise<void>;
   onUpdateSubitemCheckbox: (subitemId: number, isChecked: boolean) => Promise<void>;
   onUpdateSubitemText: (subitemId: number, newText: string) => Promise<void>;
   onDeleteSubitem: (subitemId: number) => Promise<void>;
@@ -19,28 +19,28 @@ const NoteCard: Component<NoteCardProps> = (props) => {
   
   const getSubitemsWithEmpty = () => [
     ...props.note.subitems,
-    { text: "", is_checked: false, note_id: props.note.note_id }
+    { text: "", isChecked: false, noteId: props.note.noteId }
   ];
   
   const saveBody = async () => {
-    await props.onSaveFreeTextEdits(props.note.note_id, currentBody());
+    await props.onSaveFreeTextEdits(props.note.noteId, currentBody());
     setIsEditing(false);
   };
   
   const addNewSubitem = async (newText: string) => {
-    await props.onAddSubitem(props.note.note_id, newText);
+    await props.onAddSubitem(props.note.noteId, newText);
   }
 
   const handleSubitemCheckboxUpdate = async (subitem: SubitemType) => {
-    subitem.is_checked = !subitem.is_checked;
+    subitem.isChecked = !subitem.isChecked;
     
     try {
-      if (subitem.subitem_id) {
-        await props.onUpdateSubitemCheckbox(subitem.subitem_id, subitem.is_checked);
+      if (subitem.subitemId) {
+        await props.onUpdateSubitemCheckbox(subitem.subitemId, subitem.isChecked);
       }
     } catch (error) {
       // Revert the checkbox if the API call fails
-      subitem.is_checked = !subitem.is_checked;
+      subitem.isChecked = !subitem.isChecked;
     }
   };
 
@@ -49,8 +49,8 @@ const NoteCard: Component<NoteCardProps> = (props) => {
     subitem.text = newText;
     
     try {
-      if (subitem.subitem_id) {
-        await props.onUpdateSubitemText(subitem.subitem_id, newText);
+      if (subitem.subitemId) {
+        await props.onUpdateSubitemText(subitem.subitemId, newText);
       }
     } catch (error) {
       // Revert the text if the API call fails
@@ -59,8 +59,8 @@ const NoteCard: Component<NoteCardProps> = (props) => {
   };
 
   const handleSubitemDelete = async (subitem: SubitemType) => {
-    if (subitem.subitem_id) {
-      await props.onDeleteSubitem(subitem.subitem_id);
+    if (subitem.subitemId) {
+      await props.onDeleteSubitem(subitem.subitemId);
     }
   };
 
@@ -68,7 +68,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
     <div class="bg-white p-2 mx-auto sm:mx-0 mb-0 m-4 text-center rounded-md shadow-md flex flex-col min-h-[150px] w-[95%] sm:w-full">
       <div class="flex items-center justify-between w-full mb-1">
         <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-          onClick={() => props.onDelete(props.note.note_id)}>
+          onClick={() => props.onDelete(props.note.noteId)}>
           delete
         </span>
         <h2 class="flex-grow"><b>{props.note.title}</b></h2>
@@ -80,12 +80,12 @@ const NoteCard: Component<NoteCardProps> = (props) => {
       <hr class="mb-2" />
       
       <div class="flex flex-col flex-grow">
-        {props.note.note_type === 'freetext' ? (
+        {props.note.noteType === 'freetext' ? (
           <>
             {isEditing() ? (
               <>{/* Editing note display*/}
               <textarea 
-                id={`note-${props.note.note_id}-body`}
+                id={`note-${props.note.noteId}-body`}
                 class="w-full h-full bg-gray-50 border border-gray-300 rounded-md p-1 resize-none" 
                 value={currentBody()}
                 onInput={(e) => setCurrentBody(e.currentTarget.value)}

@@ -1,15 +1,15 @@
 export interface Note {
-  note_id: number;
+  noteId: number;
   title: string;
-  note_type: 'freetext' | 'subitems';
+  noteType: 'freetext' | 'subitems';
   body: string;
   subitems: SubitemType[];
-  display_order: number;
+  displayOrder: number;
 } 
 
 export interface SubitemType {
-  subitem_id?: number;
-  note_id: number;
+  subitemId?: number;
+  noteId: number;
   text: string;
-  is_checked: boolean;
+  isChecked: boolean;
 }

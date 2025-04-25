@@ -20,7 +20,7 @@ export default function Notes() {
   const auth = useAuth();
   const [error, setError] = createSignal<string | null>(null);
   const [activeDraggingNote, setActiveDraggingNote] = createSignal<Note | null>(null);
-  const ids = () => notes().map((note: Note) => note.note_id);
+  const ids = () => notes().map((note: Note) => note.noteId);
   
   const fetchNotes = async () => {
     const response = await fetch("api/notes", {
@@ -58,14 +58,14 @@ export default function Notes() {
           'Authorization': `Bearer ${auth.token()}`
         },
         body: JSON.stringify({
-          note_id: idTodelete
+          noteId: idTodelete
         }),
       });
       
       await handleApiResponse(response, auth.logout);
       mutate((existingNotes = []) => {
         const updatedNotes = [...existingNotes];
-        const indexToDelete = existingNotes.findIndex((note: Note) => note.note_id == idTodelete);
+        const indexToDelete = existingNotes.findIndex((note: Note) => note.noteId == idTodelete);
         if (indexToDelete === -1) {
           throw new Error(`Failed to delete note ${idTodelete}`);
         }
@@ -73,7 +73,7 @@ export default function Notes() {
         // Update display order for remaining notes
         return updatedNotes.map((note, index) => ({
           ...note,
-          display_order: index
+          displayOrder: index
         }));
       });
       
@@ -93,7 +93,7 @@ export default function Notes() {
           'Authorization': `Bearer ${auth.token()}`
         },
         body: JSON.stringify({
-          note_id: noteId,
+          noteId: noteId,
           body: newBody
         }),
       });
@@ -101,7 +101,7 @@ export default function Notes() {
       await handleApiResponse(response, auth.logout);
       mutate((existingNotes = []) => {
         return existingNotes.map((note: Note) => 
-          note.note_id === noteId 
+          note.noteId === noteId 
             ? { 
                 ...note, 
                 body: newBody,
@@ -125,7 +125,7 @@ export default function Notes() {
           'Authorization': `Bearer ${auth.token()}`
         },
         body: JSON.stringify({
-          note_id: noteId,
+          noteId: noteId,
           text: newText
         }),
       });
@@ -134,10 +134,10 @@ export default function Notes() {
       
       mutate((existingNotes = []) => {
         return existingNotes.map((note: Note) => 
-          note.note_id === noteId
+          note.noteId === noteId
             ? {
                 ...note,
-                subitems: [...note.subitems, { subitem_id: data.subitem_id, text: newText, is_checked: false, note_id: noteId }]
+                subitems: [...note.subitems, { subitemId: data.subitemId, text: newText, isChecked: false, noteId: noteId }]
               }
             : note
         );
@@ -158,7 +158,7 @@ export default function Notes() {
           'Authorization': `Bearer ${auth.token()}`
         },
         body: JSON.stringify({
-          is_checked: isChecked
+          isChecked: isChecked
         }),
       });
       
@@ -168,8 +168,8 @@ export default function Notes() {
         return existingNotes.map((note: Note) => ({
           ...note,
           subitems: note.subitems.map(subitem => 
-            subitem.subitem_id === subitemId 
-              ? { ...subitem, is_checked: isChecked }
+            subitem.subitemId === subitemId 
+              ? { ...subitem, isChecked: isChecked }
               : subitem
           )
         }));
@@ -200,7 +200,7 @@ export default function Notes() {
         return existingNotes.map((note: Note) => ({
           ...note,
           subitems: note.subitems.map(subitem => 
-            subitem.subitem_id === subitemId 
+            subitem.subitemId === subitemId 
               ? { ...subitem, text: newText }
               : subitem
           )
@@ -227,7 +227,7 @@ export default function Notes() {
       mutate((existingNotes = []) => {
         return existingNotes.map((note: Note) => ({
           ...note,
-          subitems: note.subitems.filter(subitem => subitem.subitem_id !== subitemId)
+          subitems: note.subitems.filter(subitem => subitem.subitemId !== subitemId)
         }));
       });
     } catch (err: any) {
@@ -246,7 +246,7 @@ export default function Notes() {
           'Authorization': `Bearer ${auth.token()}`
         },
         body: JSON.stringify({
-          note_ids: noteIds
+          noteIds: noteIds
         }),
       });
       
@@ -257,7 +257,7 @@ export default function Notes() {
   };
 
   const handleDragStart = (event: any) => {
-    setActiveDraggingNote(notes().find((note: Note) => note.note_id === Number(event.draggable.id)) || null);
+    setActiveDraggingNote(notes().find((note: Note) => note.noteId === Number(event.draggable.id)) || null);
   };
 
   const handleDragEnd = async ({ draggable, droppable }: DragEvent) => {
@@ -266,8 +266,8 @@ export default function Notes() {
     if (!draggable || !droppable) return;
     
     const currentNotes = notes();
-    const fromIndex = currentNotes.findIndex((note: Note) => note.note_id === Number(draggable.id));
-    const toIndex = currentNotes.findIndex((note: Note) => note.note_id === Number(droppable.id));
+    const fromIndex = currentNotes.findIndex((note: Note) => note.noteId === Number(draggable.id));
+    const toIndex = currentNotes.findIndex((note: Note) => note.noteId === Number(droppable.id));
     
     if (fromIndex === -1 || toIndex === -1) return;
     if (fromIndex === toIndex) return;
@@ -277,15 +277,15 @@ export default function Notes() {
       const [movedNote] = updatedNotes.splice(fromIndex, 1);
       updatedNotes.splice(toIndex, 0, movedNote);
       
-      // Update display_order for all notes
+      // Update displayOrder for all notes
       return updatedNotes.map((note, index) => ({
         ...note,
-        display_order: index
+        displayOrder: index
       }));
     });
     
     // Get the reordered note IDs
-    const reorderedNoteIds = notes()?.map((note: Note) => note.note_id) || [];
+    const reorderedNoteIds = notes()?.map((note: Note) => note.noteId) || [];
     await updateNoteOrder(reorderedNoteIds);
   };
 
@@ -330,7 +330,7 @@ export default function Notes() {
                 <SortableProvider ids={ids()}>
                   <For each={notes()}>
                     {(item) => {
-                      const sortable = createSortable(item.note_id);
+                      const sortable = createSortable(item.noteId);
                       return (
                         <div
                           use:sortable

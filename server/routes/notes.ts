@@ -6,34 +6,34 @@ import { authMiddleware } from '../middleware/auth';
 import type { AuthedContext } from '../middleware/auth';
 
 const noteSchema = z.object({
-  note_id: z.number().int(),
+  noteId: z.number().int(),
   title: z.string().min(3).max(255),
   body: z.string(),
-  note_type: z.enum(['freetext', 'subitems'])
+  noteType: z.enum(['freetext', 'subitems'])
 })
 
 const updateFreetextNoteSchema = z.object({
-  note_id: z.number().int(),
+  noteId: z.number().int(),
   body: z.string(),
 });
 
 const createNoteSchema = z.object({
   title: z.string().min(3).max(255),
-  note_type: z.enum(['freetext', 'subitems']),
+  noteType: z.enum(['freetext', 'subitems']),
   body: z.string().optional(),
   subitems: z.array(z.object({
     text: z.string(),
-    is_checked: z.boolean()
+    isChecked: z.boolean()
   })).optional(),
-  display_order: z.number().int()
+  displayOrder: z.number().int()
 });
 
 const deleteNoteSchema = z.object({
-  note_id: z.number().int()
+  noteId: z.number().int()
 });
 
 const updateSubitemCheckboxSchema = z.object({
-  is_checked: z.boolean()
+  isChecked: z.boolean()
 });
 
 const updateSubitemTextSchema = z.object({
@@ -41,12 +41,12 @@ const updateSubitemTextSchema = z.object({
 });
 
 const createSubitemSchema = z.object({
-  note_id: z.number().int(),
+  noteId: z.number().int(),
   text: z.string()
 });
 
 const reorderNotesSchema = z.object({
-  note_ids: z.array(z.number().int())
+  noteIds: z.array(z.number().int())
 });
 
 export const notesRoute = new Hono()
@@ -77,8 +77,17 @@ export const notesRoute = new Hono()
 
       // Combine notes with their subitems
       const notes = notesRes.rows.map(note => ({
-        ...note,
-        subitems: subitemsRes.rows.filter(subitem => subitem.note_id === note.note_id)
+        noteId: note.note_id,
+        title: note.title,
+        body: note.body,
+        noteType: note.note_type,
+        displayOrder: note.display_order,
+        subitems: subitemsRes.rows.filter(subitem => subitem.note_id === note.note_id).map(subitem => ({
+          subitemId: subitem.subitem_id,
+          noteId: subitem.note_id,
+          text: subitem.text,
+          isChecked: subitem.is_checked
+        }))
       }));
       
       return c.json({ success: true, notes });
@@ -94,7 +103,7 @@ export const notesRoute = new Hono()
     const postgresClient = getPostgresClient();
     
     try {
-      const { title, body, note_type, subitems, display_order } = await c.req.json();
+      const { title, body, noteType, subitems, displayOrder } = await c.req.json();
       
       await postgresClient.connect();
       
@@ -106,20 +115,20 @@ export const notesRoute = new Hono()
         `INSERT INTO public."Notes" (user_id, title, body, note_type, display_order) 
         VALUES ($1, $2, $3, $4, $5)
         RETURNING note_id`,
-        [c.user!.user_id, title, body, note_type, display_order]
+        [c.user!.user_id, title, body, noteType, displayOrder]
       );
       
       const noteId = noteRes.rows[0].note_id;
       
       // If it's a subitems note and subitems were provided, insert them
-      if (note_type === 'subitems' && subitems && subitems.length > 0) {
+      if (noteType === 'subitems' && subitems && subitems.length > 0) {
         const subitemValues = subitems
           .map((_: any, i: number) => `($1, $${i * 2 + 2}, $${i * 2 + 3})`)
           .join(', ');
         
         const subitemParams = [noteId];
-        subitems.forEach((item: { text: string; is_checked: boolean; }) => {
-          subitemParams.push(item.text, item.is_checked);
+        subitems.forEach((item: { text: string; isChecked: boolean; }) => {
+          subitemParams.push(item.text, item.isChecked);
         });
         
         await postgresClient.query(
@@ -132,7 +141,7 @@ export const notesRoute = new Hono()
       // Commit transaction
       await postgresClient.query('COMMIT');
       
-      return c.json({ success: true, note_id: noteId });
+      return c.json({ success: true, noteId: noteId });
       
     } catch (err) {
       // Rollback in case of error
@@ -147,7 +156,7 @@ export const notesRoute = new Hono()
     const postgresClient = getPostgresClient();
     
     try {
-      const { note_id } = await c.req.json();
+      const { noteId } = await c.req.json();
       
       await postgresClient.connect();
       
@@ -155,7 +164,7 @@ export const notesRoute = new Hono()
         `DELETE FROM public."Notes"
         WHERE note_id = $1 AND user_id = $2
         RETURNING note_id`,
-        [note_id, c.user!.user_id]
+        [noteId, c.user!.user_id]
       );
       
       if (res.rowCount === 0) {
@@ -175,7 +184,7 @@ export const notesRoute = new Hono()
     const postgresClient = getPostgresClient();
     
     try {
-      const { note_id, body } = await c.req.json();
+      const { noteId, body } = await c.req.json();
       
       await postgresClient.connect();
       
@@ -183,7 +192,7 @@ export const notesRoute = new Hono()
       const noteExistsCheck = await postgresClient.query(
         `SELECT note_id FROM public."Notes" 
         WHERE note_id = $1 AND user_id = $2`,
-        [note_id, c.user!.user_id]
+        [noteId, c.user!.user_id]
       );
       
       if (noteExistsCheck.rows.length === 0) {
@@ -195,7 +204,7 @@ export const notesRoute = new Hono()
         `UPDATE public."Notes" 
         SET body = $1 
         WHERE note_id = $2`,
-        [body, note_id]
+        [body, noteId]
       );
       
       return c.json({ success: true });
@@ -212,7 +221,7 @@ export const notesRoute = new Hono()
     const postgresClient = getPostgresClient();
     
     try {
-      const { note_id, text } = await c.req.json();
+      const { noteId, text } = await c.req.json();
       
       await postgresClient.connect();
       
@@ -220,7 +229,7 @@ export const notesRoute = new Hono()
       const noteExistsCheck = await postgresClient.query(
         `SELECT note_id FROM public."Notes" 
         WHERE note_id = $1 AND user_id = $2`,
-        [note_id, c.user!.user_id]
+        [noteId, c.user!.user_id]
       );
       
       if (noteExistsCheck.rows.length === 0) {
@@ -232,12 +241,12 @@ export const notesRoute = new Hono()
         `INSERT INTO public."Subitems" (note_id, text, is_checked)
         VALUES ($1, $2, false)
         RETURNING subitem_id`,
-        [note_id, text]
+        [noteId, text]
       );
       
       return c.json({ 
         success: true, 
-        subitem_id: newSubitemRes.rows[0].subitem_id 
+        subitemId: newSubitemRes.rows[0].subitem_id 
       });
       
     } catch (err) {
@@ -247,11 +256,11 @@ export const notesRoute = new Hono()
       await postgresClient.end();
     }
   })
-  .patch('/subitems/checkbox/:subitem_id', zValidator('json', updateSubitemCheckboxSchema), async (c: AuthedContext) => {
+  .patch('/subitems/checkbox/:subitemId', zValidator('json', updateSubitemCheckboxSchema), async (c: AuthedContext) => {
     const postgresClient = getPostgresClient();
     
     try {
-      const subitemId = Number(c.req.param('subitem_id'));
+      const subitemId = Number(c.req.param('subitemId'));
       const updateData = await c.req.json();
       
       await postgresClient.connect();
@@ -272,7 +281,7 @@ export const notesRoute = new Hono()
         `UPDATE public."Subitems" 
           SET is_checked = $1 
           WHERE subitem_id = $2`,
-        [updateData.is_checked, subitemId]
+        [updateData.isChecked, subitemId]
       );
       
       return c.json({ success: true });
@@ -284,11 +293,11 @@ export const notesRoute = new Hono()
       await postgresClient.end();
     }
   })
-  .patch('/subitems/text/:subitem_id', zValidator('json', updateSubitemTextSchema), async (c: AuthedContext) => {
+  .patch('/subitems/text/:subitemId', zValidator('json', updateSubitemTextSchema), async (c: AuthedContext) => {
     const postgresClient = getPostgresClient();
     
     try {
-      const subitemId = Number(c.req.param('subitem_id'));
+      const subitemId = Number(c.req.param('subitemId'));
       const updateData = await c.req.json();
       
       await postgresClient.connect();
@@ -321,11 +330,11 @@ export const notesRoute = new Hono()
       await postgresClient.end();
     }
   })
-  .delete('/subitems/:subitem_id', async (c: AuthedContext) => {
+  .delete('/subitems/:subitemId', async (c: AuthedContext) => {
     const postgresClient = getPostgresClient();
     
     try {
-      const subitemId = Number(c.req.param('subitem_id'));
+      const subitemId = Number(c.req.param('subitemId'));
       
       await postgresClient.connect();
       
@@ -362,7 +371,7 @@ export const notesRoute = new Hono()
     const postgresClient = getPostgresClient();
     
     try {
-      const { note_ids } = await c.req.json();
+      const { noteIds } = await c.req.json();
       
       await postgresClient.connect();
       
@@ -374,10 +383,10 @@ export const notesRoute = new Hono()
         `SELECT COUNT(*) as count 
          FROM public."Notes" 
          WHERE note_id = ANY($1) AND user_id = $2`,
-        [note_ids, c.user!.user_id]
+        [noteIds, c.user!.user_id]
       );
       
-      if (Number(noteCountRes.rows[0].count) !== note_ids.length) {
+      if (Number(noteCountRes.rows[0].count) !== noteIds.length) {
         await postgresClient.query('ROLLBACK');
         return c.json({ success: false, error: 'One or more notes not found or unauthorized' }, 404);
       }
@@ -391,7 +400,7 @@ export const notesRoute = new Hono()
           FROM unnest($1::integer[]) WITH ORDINALITY AS t(note_id, index)
         ) AS data
         WHERE public."Notes".note_id = data.note_id;`,
-        [note_ids]
+        [noteIds]
       );
     
       await postgresClient.query('COMMIT');

@@ -22,19 +22,19 @@ export default function NewNote(props: NewNoteProps) {
   
   const getNewNoteSubitemsWithEmpty = () => [
     ...newSubitems(),
-    { text: "", is_checked: false, note_id: -1 }
+    { text: "", isChecked: false, noteId: -1 }
   ];
 
   const handleNewNoteAddSubitem = (newText: string) => {
     if (newText.trim()) {
-      setNewSubitems(items => [...items, { text: newText, is_checked: false, note_id: -1 }]);
+      setNewSubitems(items => [...items, { text: newText, isChecked: false, noteId: -1 }]);
     }
   };
   
   const handleNewNoteSubitemCheckboxUpdate = (subitem: SubitemType) => {
     setNewSubitems(items => 
       items.map(item => 
-        item === subitem ? { ...item, is_checked: !item.is_checked } : item
+        item === subitem ? { ...item, isChecked: !item.isChecked } : item
       )
     );
   };
@@ -65,22 +65,22 @@ export default function NewNote(props: NewNoteProps) {
         },
         body: JSON.stringify({
           title: newTitle(),
-          note_type: newNoteType(),
+          noteType: newNoteType(),
           body: newNoteType() === 'freetext' ? newBody() : '',
           subitems: newNoteType() === 'subitems' ? newSubitems() : [],
-          display_order: newNoteDisplayOrder
+          displayOrder: newNoteDisplayOrder
         }),
       });
       
       const data = await handleApiResponse(response, auth.logout);
       props.onNoteAddedToDatabase(
         {
-          note_id: data.note_id, 
+          noteId: data.noteId, 
           title: newTitle(), 
-          note_type: newNoteType(),
+          noteType: newNoteType(),
           body: newNoteType() === 'freetext' ? newBody() : '',
           subitems: newNoteType() === 'subitems' ? newSubitems() : [],
-          display_order: newNoteDisplayOrder
+          displayOrder: newNoteDisplayOrder
         }
       );
       
