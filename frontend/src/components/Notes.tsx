@@ -1,5 +1,5 @@
 import { createResource, createSignal, For, Show } from "solid-js";
-import { createSortable, DragDropProvider, DragDropSensors, SortableProvider, closestCenter } from "@thisbeyond/solid-dnd";
+import { createSortable, DragDropProvider, DragDropSensors, DragEvent, SortableProvider, closestCenter } from "@thisbeyond/solid-dnd";
 
 import { useAuth } from "../context/AuthContext";
 import { handleApiResponse } from "../utils/api";
@@ -19,7 +19,8 @@ declare module "solid-js" {
 export default function Notes() {
   const auth = useAuth();
   const [error, setError] = createSignal<string | null>(null);
-  const [activeDragId, setActiveDragId] = createSignal<number | null>(null);
+  const [activeDraggingNoteId, setActiveDraggingNoteId] = createSignal<number | null>(null);
+  const ids = () => notes().map((note: Note) => note.note_id);
   
   const fetchNotes = async () => {
     const response = await fetch("api/notes", {
@@ -256,16 +257,17 @@ export default function Notes() {
   };
 
   const handleDragStart = (event: any) => {
-    setActiveDragId(Number(event.draggable.id));
+    setActiveDraggingNoteId(notes().find((note: Note) => note.note_id === Number(event.draggable.id)) || null);
   };
 
-  const handleDragEnd = async (event: any) => {
-    setActiveDragId(null);
+  const handleDragEnd = async ({ draggable, droppable }: DragEvent) => {
+    setActiveDraggingNoteId(null);
     
-    if (!event.draggable || !event.droppable) return;
+    if (!draggable || !droppable) return;
     
-    const fromIndex = Number(event.draggable.id);
-    const toIndex = Number(event.droppable.id);
+    const currentNotes = notes();
+    const fromIndex = currentNotes.findIndex((note: Note) => note.note_id === Number(draggable.id));
+    const toIndex = currentNotes.findIndex((note: Note) => note.note_id === Number(droppable.id));
     
     if (fromIndex === toIndex) return;
     
@@ -322,63 +324,38 @@ export default function Notes() {
             onDragEnd={handleDragEnd} 
             collisionDetector={closestCenter}
           >
-            <DragDropSensors />
-            <style>
-              {`
-                .sortable-item {
-                  transition: transform 250ms ease;
-                  touch-action: none;
-                }
-                .sortable-item.active-draggable {
-                  z-index: 10;
-                  transition: none;
-                }
-                .sortable-item.transition-transform:not(.active-draggable) {
-                  transition: transform 250ms ease;
-                }
-                .sortable-ghost {
-                  opacity: 0.4;
-                }
-              `}
-            </style>
-            <SortableProvider ids={notes() ? Array.from({ length: notes().length }, (_, i) => i) : []}>
+            <DragDropSensors>
               <div class="grid sticky-grid">
-                <For each={notes()}>
-                  {(item, index) => {
-                    const sortable = createSortable(index());
-                    return (
-                      <div
-                        use:sortable
-                        class="sortable-item"
-                        classList={{
-                          "active-draggable": sortable.isActiveDraggable,
-                          "sortable-ghost": activeDragId() === index(),
-                          "transition-transform": !!sortable.transform,
-                        }}
-                        style={{
-                          transform: sortable.transform ? `translate(${sortable.transform.x}px, ${sortable.transform.y}px)` : undefined,
-                          "z-index": sortable.isActiveDraggable ? 10 : 1
-                        }}
-                      >
-                        <NoteCard 
-                          note_id={item.note_id}
-                          title={item.title}
-                          note_type={item.note_type}
-                          body={item.body}
-                          subitems={item.subitems}
-                          onDelete={deleteNote} 
-                          onSaveFreeTextEdits={updateNote}
-                          onAddSubitem={addNewSubitem}
-                          onUpdateSubitemCheckbox={updateSubitemCheckbox}
-                          onUpdateSubitemText={updateSubitemText}
-                          onDeleteSubitem={deleteSubitem}
-                        />
-                      </div>
-                    );
-                  }}
-                </For>
+                <SortableProvider ids={ids()}>
+                  <For each={notes()}>
+                    {(item) => {
+                      const sortable = createSortable(item.note_id);
+                      return (
+                        <div
+                          use:sortable
+                          class="sortable-item"
+                          classList={{ "opacity-25": sortable.isActiveDraggable }}
+                        >
+                          <NoteCard 
+                            note_id={item.note_id}
+                            title={item.title}
+                            note_type={item.note_type}
+                            body={item.body}
+                            subitems={item.subitems}
+                            onDelete={deleteNote} 
+                            onSaveFreeTextEdits={updateNote}
+                            onAddSubitem={addNewSubitem}
+                            onUpdateSubitemCheckbox={updateSubitemCheckbox}
+                            onUpdateSubitemText={updateSubitemText}
+                            onDeleteSubitem={deleteSubitem}
+                          />
+                        </div>
+                      );
+                    }}
+                  </For>
+                </SortableProvider>
               </div>
-            </SortableProvider>
+            </DragDropSensors>
           </DragDropProvider>
         </Show>
       </main>
