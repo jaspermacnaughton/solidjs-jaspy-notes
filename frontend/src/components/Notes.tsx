@@ -269,6 +269,7 @@ export default function Notes() {
     const fromIndex = currentNotes.findIndex((note: Note) => note.note_id === Number(draggable.id));
     const toIndex = currentNotes.findIndex((note: Note) => note.note_id === Number(droppable.id));
     
+    if (fromIndex === -1 || toIndex === -1) return;
     if (fromIndex === toIndex) return;
     
     mutate((existingNotes = []) => {
