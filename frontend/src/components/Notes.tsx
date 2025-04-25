@@ -1,5 +1,5 @@
 import { createResource, createSignal, For, Show } from "solid-js";
-import { createSortable, DragDropProvider, DragDropSensors, DragEvent, SortableProvider, closestCenter } from "@thisbeyond/solid-dnd";
+import { createSortable, DragDropProvider, DragDropSensors, DragEvent, SortableProvider, closestCenter, DragOverlay } from "@thisbeyond/solid-dnd";
 
 import { useAuth } from "../context/AuthContext";
 import { handleApiResponse } from "../utils/api";
@@ -19,7 +19,7 @@ declare module "solid-js" {
 export default function Notes() {
   const auth = useAuth();
   const [error, setError] = createSignal<string | null>(null);
-  const [activeDraggingNoteId, setActiveDraggingNoteId] = createSignal<number | null>(null);
+  const [activeDraggingNote, setActiveDraggingNote] = createSignal<Note | null>(null);
   const ids = () => notes().map((note: Note) => note.note_id);
   
   const fetchNotes = async () => {
@@ -257,11 +257,11 @@ export default function Notes() {
   };
 
   const handleDragStart = (event: any) => {
-    setActiveDraggingNoteId(notes().find((note: Note) => note.note_id === Number(event.draggable.id)) || null);
+    setActiveDraggingNote(notes().find((note: Note) => note.note_id === Number(event.draggable.id)) || null);
   };
 
   const handleDragEnd = async ({ draggable, droppable }: DragEvent) => {
-    setActiveDraggingNoteId(null);
+    setActiveDraggingNote(null);
     
     if (!draggable || !droppable) return;
     
@@ -338,11 +338,7 @@ export default function Notes() {
                           classList={{ "opacity-25": sortable.isActiveDraggable }}
                         >
                           <NoteCard 
-                            note_id={item.note_id}
-                            title={item.title}
-                            note_type={item.note_type}
-                            body={item.body}
-                            subitems={item.subitems}
+                            note={item}
                             onDelete={deleteNote} 
                             onSaveFreeTextEdits={updateNote}
                             onAddSubitem={addNewSubitem}
@@ -357,6 +353,19 @@ export default function Notes() {
                 </SortableProvider>
               </div>
             </DragDropSensors>
+            <DragOverlay>
+              <Show when={activeDraggingNote()}>
+                <NoteCard 
+                  note={activeDraggingNote()!}
+                  onDelete={deleteNote} 
+                  onSaveFreeTextEdits={updateNote}
+                  onAddSubitem={addNewSubitem}
+                  onUpdateSubitemCheckbox={updateSubitemCheckbox}
+                  onUpdateSubitemText={updateSubitemText}
+                  onDeleteSubitem={deleteSubitem}
+                />
+              </Show>
+            </DragOverlay>
           </DragDropProvider>
         </Show>
       </main>
