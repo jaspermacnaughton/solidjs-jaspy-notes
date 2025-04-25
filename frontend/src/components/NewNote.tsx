@@ -110,7 +110,10 @@ export default function NewNote(props: NewNoteProps) {
           <div class="w-6"></div>
           <h3 class="flex-grow text-center m-2 text-xl"><b>New Note</b></h3>
           <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm mr-2"
-            onClick={() => setIsAddingNewNote(false)}>
+            onClick={() => {
+              setIsAddingNewNote(false);
+              setError(null);
+            }}>
               cancel
           </span>
         </div>
