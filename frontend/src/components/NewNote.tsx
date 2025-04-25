@@ -54,6 +54,11 @@ export default function NewNote(props: NewNoteProps) {
   const postNewNote = async () => {
     setError(null);
     
+    if (newTitle().trim() === "") {
+      setError("Title is required");
+      return;
+    }
+    
     try {
       let newNoteDisplayOrder = props.notesLength;
       
@@ -113,7 +118,7 @@ export default function NewNote(props: NewNoteProps) {
         <hr />
         
         <Show when={error()}>
-          <div class="text-red-500 bg-red-200 px-4 py-2 mb-2 rounded m-4 p-1">
+          <div class="text-red-500 bg-red-200 px-4 py-2 mb-2 rounded m-4 p-1 text-center">
             Error: {error()}
           </div>
         </Show>
