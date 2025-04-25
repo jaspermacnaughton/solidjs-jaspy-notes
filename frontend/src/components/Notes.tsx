@@ -20,7 +20,6 @@ export default function Notes() {
   const auth = useAuth();
   const [error, setError] = createSignal<string | null>(null);
   const [activeDraggingNote, setActiveDraggingNote] = createSignal<Note | null>(null);
-  const ids = () => notes().map((note: Note) => note.noteId);
   
   const fetchNotes = async () => {
     const response = await fetch("api/notes", {
@@ -42,6 +41,7 @@ export default function Notes() {
       throw err;
     })
   );
+  const noteIds = () => notes().map((note: Note) => note.noteId);
 
   const addNewNote = (newNote: Note) => {
     mutate((existingNotes = []) => [...existingNotes, newNote]);
@@ -200,7 +200,7 @@ export default function Notes() {
         return existingNotes.map((note: Note) => ({
           ...note,
           subitems: note.subitems.map(subitem => 
-            subitem.subitemId === subitemId 
+            subitem.subitemId === subitemId
               ? { ...subitem, text: newText }
               : subitem
           )
@@ -284,9 +284,8 @@ export default function Notes() {
       }));
     });
     
-    // Get the reordered note IDs
-    const reorderedNoteIds = notes()?.map((note: Note) => note.noteId) || [];
-    await updateNoteOrder(reorderedNoteIds);
+    // Post the reordered note IDs to the database
+    await updateNoteOrder(noteIds());
   };
 
   return (
@@ -327,7 +326,7 @@ export default function Notes() {
           >
             <DragDropSensors>
               <div class="grid sticky-grid">
-                <SortableProvider ids={ids()}>
+                <SortableProvider ids={noteIds()}>
                   <For each={notes()}>
                     {(item) => {
                       const sortable = createSortable(item.noteId);
