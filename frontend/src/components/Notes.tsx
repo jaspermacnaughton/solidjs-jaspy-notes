@@ -259,10 +259,8 @@ export default function Notes() {
   const handleDragStart = (event: any) => {
     setActiveDraggingNote(notes().find((note: Note) => note.noteId === Number(event.draggable.id)) || null);
   };
-
-  const handleDragEnd = async ({ draggable, droppable }: DragEvent) => {
-    setActiveDraggingNote(null);
-    
+  
+  const handleDragOver = ({ draggable, droppable }: DragEvent) => {
     if (!draggable || !droppable) return;
     
     const currentNotes = notes();
@@ -272,6 +270,7 @@ export default function Notes() {
     if (fromIndex === -1 || toIndex === -1) return;
     if (fromIndex === toIndex) return;
     
+    // Update our local state while user is dragging a note
     mutate((existingNotes = []) => {
       const updatedNotes = [...existingNotes];
       const [movedNote] = updatedNotes.splice(fromIndex, 1);
@@ -283,8 +282,12 @@ export default function Notes() {
         displayOrder: index
       }));
     });
-    
-    // Post the reordered note IDs to the database
+  };
+
+  const handleDragEnd = async () => {
+    setActiveDraggingNote(null);
+        
+    // Post the reordered note IDs to the database after note has been released
     await updateNoteOrder(noteIds());
   };
 
@@ -320,7 +323,8 @@ export default function Notes() {
           fallback={<div>Loading...</div>}
         >
           <DragDropProvider 
-            onDragStart={handleDragStart} 
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
             collisionDetector={closestCenter}
           >
