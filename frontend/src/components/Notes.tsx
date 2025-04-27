@@ -7,15 +7,6 @@ import { Note } from '../types/notes';
 import NoteCard from "./NoteCard";
 import NewNote from "./NewNote";
 
-// Needed so use:sortable doesn't throw linter errors
-declare module "solid-js" {
-  namespace JSX {
-    interface Directives {
-      sortable: boolean;
-    }
-  }
-}
-
 export default function Notes() {
   const auth = useAuth();
   const [error, setError] = createSignal<string | null>(null);
