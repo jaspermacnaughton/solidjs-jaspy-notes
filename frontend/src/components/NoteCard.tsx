@@ -82,7 +82,8 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
         </span>
         {isEditingTitle() ? (
           <div class="flex-grow flex items-center">
-            <input 
+            <input
+              id={`note-${props.note.noteId}-title`}
               type="text"
               class="w-full border border-gray-300 rounded-md p-1 text-center font-bold h-[1.5em]"
               value={currentTitle()}
