@@ -333,7 +333,7 @@ export default function Notes() {
                       return (
                         <div
                           use:sortable
-                          class="sortable-item"
+                          class="touch-none"
                           classList={{ "opacity-25": sortable.isActiveDraggable }}
                         >
                           <NoteCard 
