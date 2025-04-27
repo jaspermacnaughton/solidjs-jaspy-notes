@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+This project uses bun (https://bun.sh/). Whenever suggesting any command line command, suggest the bun or bunx command (eg bun run dev) and not node.js
