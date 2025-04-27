@@ -73,11 +73,43 @@ export default function Notes() {
     }
   };
 
-  const updateNote = async (noteId: number, newBody: string) => {
+  const updateNoteTitle = async (noteId: number, newTitle: string) => {
     setError(null);
     
     try {
-      const response = await fetch('api/notes', {
+      const response = await fetch('api/notes/title', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token()}`
+        },
+        body: JSON.stringify({
+          noteId: noteId,
+          title: newTitle
+        }),
+      });
+      
+      await handleApiResponse(response, auth.logout);
+      mutate((existingNotes = []) => {
+        return existingNotes.map((note: Note) => 
+          note.noteId === noteId 
+            ? { 
+                ...note, 
+                title: newTitle,
+              }
+            : note
+        );
+      });
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const updateNoteBody = async (noteId: number, newBody: string) => {
+    setError(null);
+    
+    try {
+      const response = await fetch('api/notes/body', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -334,8 +366,9 @@ export default function Notes() {
                           <NoteCard
                             note={note}
                             sortable={sortable}
-                            onDelete={deleteNote} 
-                            onSaveFreeTextEdits={updateNote}
+                            onDelete={deleteNote}
+                            onSaveTitleEdits={updateNoteTitle}
+                            onSaveFreeTextBodyEdits={updateNoteBody}
                             onAddSubitem={addNewSubitem}
                             onUpdateSubitemCheckbox={updateSubitemCheckbox}
                             onUpdateSubitemText={updateSubitemText}
@@ -353,7 +386,8 @@ export default function Notes() {
                 <NoteCard 
                   note={activeDraggingNote()!}
                   onDelete={deleteNote} 
-                  onSaveFreeTextEdits={updateNote}
+                  onSaveTitleEdits={updateNoteTitle}
+                  onSaveFreeTextBodyEdits={updateNoteBody}
                   onAddSubitem={addNewSubitem}
                   onUpdateSubitemCheckbox={updateSubitemCheckbox}
                   onUpdateSubitemText={updateSubitemText}

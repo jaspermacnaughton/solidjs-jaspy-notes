@@ -7,7 +7,8 @@ type NoteCardProps = {
   note: Note;
   sortable?: any; // TODO: export type Sortable from "@thisbeyond/solid-dnd";
   onDelete: (noteId: number) => void;
-  onSaveFreeTextEdits: (noteId: number, newBody: string) => Promise<void>;
+  onSaveTitleEdits: (noteId: number, newTitle: string) => Promise<void>;
+  onSaveFreeTextBodyEdits: (noteId: number, newBody: string) => Promise<void>;
   onAddSubitem: (noteId: number, newText: string) => Promise<void>;
   onUpdateSubitemCheckbox: (subitemId: number, isChecked: boolean) => Promise<void>;
   onUpdateSubitemText: (subitemId: number, newText: string) => Promise<void>;
@@ -15,7 +16,9 @@ type NoteCardProps = {
 };
 
 const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
-  const [isEditing, setIsEditing] = createSignal(false);
+  const [isEditingTitle, setIsEditingTitle] = createSignal(false);
+  const [currentTitle, setCurrentTitle] = createSignal(props.note.title);
+  const [isEditingBody, setIsEditingBody] = createSignal(false);
   const [currentBody, setCurrentBody] = createSignal(props.note.body);
   
   const getSubitemsWithEmpty = () => [
@@ -23,9 +26,14 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
     { text: "", isChecked: false, noteId: props.note.noteId }
   ];
   
+  const saveTitle = async () => {
+    await props.onSaveTitleEdits(props.note.noteId, currentTitle());
+    setIsEditingTitle(false);
+  };
+  
   const saveBody = async () => {
-    await props.onSaveFreeTextEdits(props.note.noteId, currentBody());
-    setIsEditing(false);
+    await props.onSaveFreeTextBodyEdits(props.note.noteId, currentBody());
+    setIsEditingBody(false);
   };
   
   const addNewSubitem = async (newText: string) => {
@@ -72,7 +80,30 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
           onClick={() => props.onDelete(props.note.noteId)}>
           delete
         </span>
-        <h2 class="flex-grow"><b>{props.note.title}</b></h2>
+        {isEditingTitle() ? (
+          <div class="flex-grow flex items-center">
+            <input 
+              type="text"
+              class="w-full border border-gray-300 rounded-md p-1 text-center h-[1.5em]"
+              value={currentTitle()}
+              onInput={(e) => setCurrentTitle(e.currentTarget.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  saveTitle();
+                } else if (e.key === 'Escape') {
+                  setCurrentTitle(props.note.title);
+                  setIsEditingTitle(false);
+                }
+              }}
+              onBlur={saveTitle}
+              autofocus
+            />
+          </div>
+        ) : (
+          <h2 class="flex-grow cursor-pointer hover:bg-gray-100 rounded px-1" onClick={() => setIsEditingTitle(true)}>
+            <b>{props.note.title}</b>
+          </h2>
+        )}
         <Show when={sortable} fallback={
           <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-sm align-middle">
             drag_indicator
@@ -89,7 +120,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
       <div class="flex flex-col flex-grow">
         {props.note.noteType === 'freetext' ? (
           <>
-            {isEditing() ? (
+            {isEditingBody() ? (
               <>{/* Editing note display*/}
               <textarea 
                 id={`note-${props.note.noteId}-body`}
@@ -103,7 +134,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
                 <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
                   onClick={() => {
                     setCurrentBody(props.note.body);
-                    setIsEditing(false);
+                    setIsEditingBody(false);
                   }}>
                   cancel
                 </button>
@@ -119,7 +150,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
                 
                 <div class="flex items-center justify-end w-full mt-2">
                   <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-                    onClick={() => setIsEditing(true)}>
+                    onClick={() => setIsEditingBody(true)}>
                     edit
                   </button>
                 </div>

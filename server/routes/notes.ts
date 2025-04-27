@@ -17,6 +17,11 @@ const updateFreetextNoteSchema = z.object({
   body: z.string(),
 });
 
+const updateNoteTitleSchema = z.object({
+  noteId: z.number().int(),
+  title: z.string().min(3).max(255),
+});
+
 const createNoteSchema = z.object({
   title: z.string().min(3).max(255),
   noteType: z.enum(['freetext', 'subitems']),
@@ -180,7 +185,43 @@ export const notesRoute = new Hono()
       await postgresClient.end();
     }
   })
-  .put('/', zValidator('json', updateFreetextNoteSchema), async (c: AuthedContext) => {
+  .put('/title', zValidator('json', updateNoteTitleSchema), async (c: AuthedContext) => {
+    const postgresClient = getPostgresClient();
+    
+    try {
+      const { noteId, title } = await c.req.json();
+      
+      await postgresClient.connect();
+      
+      // First verify the note belongs to the user
+      const noteExistsCheck = await postgresClient.query(
+        `SELECT note_id FROM public."Notes" 
+        WHERE note_id = $1 AND user_id = $2`,
+        [noteId, c.user!.user_id]
+      );
+      
+      if (noteExistsCheck.rows.length === 0) {
+        return c.json({ success: false, error: 'Note not found or unauthorized' }, 404);
+      }
+      
+      // Update the note title
+      await postgresClient.query(
+        `UPDATE public."Notes" 
+        SET title = $1 
+        WHERE note_id = $2`,
+        [title, noteId]
+      );
+      
+      return c.json({ success: true });
+      
+    } catch (err) {
+      return c.json({ success: false, error: 'Internal Server Error' }, 500);
+      
+    } finally {
+      await postgresClient.end();
+    }
+  })
+  .put('/body', zValidator('json', updateFreetextNoteSchema), async (c: AuthedContext) => {
     const postgresClient = getPostgresClient();
     
     try {
@@ -216,7 +257,6 @@ export const notesRoute = new Hono()
       await postgresClient.end();
     }
   })
-  
   .post('/subitems', zValidator('json', createSubitemSchema), async (c: AuthedContext) => {
     const postgresClient = getPostgresClient();
     
