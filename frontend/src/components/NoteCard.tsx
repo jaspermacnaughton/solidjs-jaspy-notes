@@ -84,7 +84,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
           <div class="flex-grow flex items-center">
             <input 
               type="text"
-              class="w-full border border-gray-300 rounded-md p-1 text-center h-[1.5em]"
+              class="w-full border border-gray-300 rounded-md p-1 text-center font-bold h-[1.5em]"
               value={currentTitle()}
               onInput={(e) => setCurrentTitle(e.currentTarget.value)}
               onKeyDown={(e) => {
