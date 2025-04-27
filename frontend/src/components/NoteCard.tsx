@@ -165,6 +165,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
                 <Subitem
                   subitem={subitem}
                   isLast={index() === getSubitemsWithEmpty().length - 1}
+                  isInDragHover={sortable !== undefined}
                   onNewSubitemTextAdded={addNewSubitem}
                   onExistingSubitemTextUpdated={handleSubitemTextUpdate}
                   onCheckboxToggled={handleSubitemCheckboxUpdate}
