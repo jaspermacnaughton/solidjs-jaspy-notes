@@ -321,23 +321,24 @@ export default function Notes() {
         >
           <DragDropProvider 
             onDragStart={handleDragStart} 
-            onDragEnd={handleDragEnd} 
+            onDragEnd={handleDragEnd}
             collisionDetector={closestCenter}
           >
             <DragDropSensors>
               <div class="grid sticky-grid">
                 <SortableProvider ids={noteIds()}>
                   <For each={notes()}>
-                    {(item) => {
-                      const sortable = createSortable(item.noteId);
+                    {(note) => {
+                      const sortable = createSortable(note.noteId);
                       return (
                         <div
-                          use:sortable
+                          ref={sortable.ref}
                           class="touch-none"
                           classList={{ "opacity-25": sortable.isActiveDraggable }}
                         >
-                          <NoteCard 
-                            note={item}
+                          <NoteCard
+                            note={note}
+                            sortable={sortable}
                             onDelete={deleteNote} 
                             onSaveFreeTextEdits={updateNote}
                             onAddSubitem={addNewSubitem}

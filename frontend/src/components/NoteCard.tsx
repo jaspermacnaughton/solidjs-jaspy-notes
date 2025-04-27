@@ -1,10 +1,11 @@
-import { createSignal, type Component, For } from 'solid-js';
+import { createSignal, type Component, For, Show } from 'solid-js';
 
 import { Note, SubitemType } from '../types/notes';
 import Subitem from './Subitem';
 
 type NoteCardProps = {
   note: Note;
+  sortable?: any; // TODO: export type Sortable from "@thisbeyond/solid-dnd";
   onDelete: (noteId: number) => void;
   onSaveFreeTextEdits: (noteId: number, newBody: string) => Promise<void>;
   onAddSubitem: (noteId: number, newText: string) => Promise<void>;
@@ -13,7 +14,7 @@ type NoteCardProps = {
   onDeleteSubitem: (subitemId: number) => Promise<void>;
 };
 
-const NoteCard: Component<NoteCardProps> = (props) => {
+const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
   const [isEditing, setIsEditing] = createSignal(false);
   const [currentBody, setCurrentBody] = createSignal(props.note.body);
   
@@ -72,9 +73,15 @@ const NoteCard: Component<NoteCardProps> = (props) => {
           delete
         </span>
         <h2 class="flex-grow"><b>{props.note.title}</b></h2>
-        <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-sm align-middle">
-          drag_indicator
-        </span>
+        <Show when={sortable} fallback={
+          <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-sm align-middle">
+            drag_indicator
+          </span>
+        }>
+          <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-sm align-middle" {...sortable.dragActivators}>
+            drag_indicator
+          </span>
+        </Show>
       </div>
       
       <hr class="mb-2" />
