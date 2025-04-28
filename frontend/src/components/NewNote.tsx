@@ -175,6 +175,7 @@ export default function NewNote(props: NewNoteProps) {
                 <Subitem
                   subitem={subitem}
                   isLast={index() === getNewNoteSubitemsWithEmpty().length - 1}
+                  isInDragHover={false}
                   onNewSubitemTextAdded={handleNewNoteAddSubitem}
                   onExistingSubitemTextUpdated={handleNewNoteSubitemTextUpdate}
                   onCheckboxToggled={handleNewNoteSubitemCheckboxUpdate}
