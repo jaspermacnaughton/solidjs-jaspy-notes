@@ -1,7 +1,7 @@
 import { Show, type Component } from 'solid-js';
 import { AuthContextProvider, useAuth } from './context/AuthContext';
-import Auth from './components/Auth';
-import Notes from './components/Notes';
+import Auth from './pages/Auth';
+import Notes from './pages/Notes';
 
 const AppContent: Component = () => {
   const auth = useAuth();

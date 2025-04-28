@@ -4,8 +4,8 @@ import { createSortable, DragDropProvider, DragDropSensors, DragEvent, SortableP
 import { useAuth } from "../context/AuthContext";
 import { handleApiResponse } from "../utils/api";
 import { Note } from '../types/notes';
-import NoteCard from "./NoteCard";
-import NewNote from "./NewNote";
+import NoteCard from "../components/NoteCard";
+import NewNote from "../components/NewNote";
 
 export default function Notes() {
   const auth = useAuth();
