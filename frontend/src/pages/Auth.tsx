@@ -1,4 +1,6 @@
 import { createSignal } from "solid-js";
+import { useNavigate } from "@solidjs/router";
+
 import { useAuth } from "../context/AuthContext";
 
 export default function Auth() {
@@ -7,6 +9,7 @@ export default function Auth() {
   const [password, setPassword] = createSignal("");
   const [error, setError] = createSignal<string | null>(null);
   const auth = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
@@ -18,6 +21,7 @@ export default function Auth() {
       } else {
         await auth.register(username(), password());
       }
+      navigate("/");
     } catch (err: any) {
       setError(err.message);
     }

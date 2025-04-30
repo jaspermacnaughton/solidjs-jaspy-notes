@@ -1,5 +1,6 @@
 import { createResource, createSignal, For, Show } from "solid-js";
 import { createSortable, DragDropProvider, DragDropSensors, DragEvent, SortableProvider, closestCenter, DragOverlay } from "@thisbeyond/solid-dnd";
+import { useNavigate } from "@solidjs/router";
 
 import { useAuth } from "../context/AuthContext";
 import { handleApiResponse } from "../utils/api";
@@ -9,8 +10,14 @@ import NewNote from "../components/NewNote";
 
 export default function Notes() {
   const auth = useAuth();
+  const navigate = useNavigate();
   const [error, setError] = createSignal<string | null>(null);
   const [activeDraggingNote, setActiveDraggingNote] = createSignal<Note | null>(null);
+  
+  const handleLogout = () => {
+    auth.logout();
+    navigate("/login");
+  };
   
   const fetchNotes = async () => {
     const response = await fetch("api/notes", {
@@ -327,7 +334,7 @@ export default function Notes() {
           
           <div class="flex items-center gap-2">
             <span class="text-sm sm:text-base">Welcome, {auth.username()}</span>
-            <button onClick={() => auth.logout()} class="btn text-sm sm:text-base">
+            <button onClick={handleLogout} class="btn text-sm sm:text-base">
               Logout
             </button>
           </div>

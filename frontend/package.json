@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@solidjs/router": "^0.15.3",
     "@thisbeyond/solid-dnd": "^0.7.5",
     "caniuse-lite": "^1.0.30001715",
     "solid-js": "^1.9.1"

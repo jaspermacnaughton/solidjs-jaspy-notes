@@ -5,6 +5,7 @@ export type AuthContextType = {
   userId: () => number | null;
   username: () => string | null;
   token: () => string | null;
+  isLoading: () => boolean;
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, password: string) => Promise<void>;
   logout: () => void;
@@ -17,6 +18,7 @@ export function AuthContextProvider(props: { children?: JSXElement }) {
   const [userId, setUserId] = createSignal<number | null>(null);
   const [username, setUsername] = createSignal<string | null>(null);
   const [token, setToken] = createSignal<string | null>(null);
+  const [isLoading, setIsLoading] = createSignal(true);
 
   // Check for stored auth on mount
   onMount(() => {
@@ -39,6 +41,7 @@ export function AuthContextProvider(props: { children?: JSXElement }) {
         localStorage.removeItem('authState');
       }
     }
+    setIsLoading(false);
   });
 
   const login = async (username: string, password: string) => {
@@ -101,6 +104,7 @@ export function AuthContextProvider(props: { children?: JSXElement }) {
       userId,
       username,
       token,
+      isLoading,
       login,
       register,
       logout
