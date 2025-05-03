@@ -1,6 +1,6 @@
 import { Component, Show } from "solid-js";
 
-import { SubitemType } from "../types/notes";
+import { SubitemType } from "../../../types/notes";
 
 type SubitemProps = {
   subitem: SubitemType;

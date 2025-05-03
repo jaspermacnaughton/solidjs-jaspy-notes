@@ -2,11 +2,11 @@ import { createResource, createSignal, For, Show } from "solid-js";
 import { createSortable, DragDropProvider, DragDropSensors, DragEvent, SortableProvider, closestCenter, DragOverlay } from "@thisbeyond/solid-dnd";
 import { useNavigate } from "@solidjs/router";
 
-import { useAuth } from "../context/AuthContext";
-import { handleApiResponse } from "../utils/api";
-import { Note } from '../types/notes';
-import NoteCard from "../components/NoteCard";
-import NewNote from "../components/NewNote";
+import { useAuth } from "../../context/AuthContext";
+import { handleApiResponse } from "../../utils/api";
+import { Note } from '../../types/notes';
+import NoteCard from "./components/NoteCard";
+import NewNote from "./components/NewNote";
 
 export default function Notes() {
   const auth = useAuth();

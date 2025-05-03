@@ -1,6 +1,6 @@
 import { createSignal, type Component, For, Show } from 'solid-js';
 
-import { Note, SubitemType } from '../types/notes';
+import { Note, SubitemType } from '../../../types/notes';
 import Subitem from './Subitem';
 
 type NoteCardProps = {
