@@ -5,6 +5,7 @@ import { handleApiResponse } from '../utils/api';
 
 interface NotesContextType {
   notes: () => Note[];
+  orderedNoteIds: () => number[];
   error: () => string | null;
   addNewNote: (newNote: Note) => void;
   deleteNote: (idTodelete: number) => Promise<void>;
@@ -16,7 +17,6 @@ interface NotesContextType {
   deleteSubitem: (subitemId: number) => Promise<void>;
   swapNotesLocally: (fromIndex: number, toIndex: number) => void;
   updateNoteOrder: (noteIds: number[]) => Promise<void>;
-  noteIds: () => number[];
 }
 
 const NotesContext = createContext<NotesContextType>();
@@ -46,7 +46,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
     })
   );
 
-  const noteIds = () => notes().map((note: Note) => note.noteId);
+  const orderedNoteIds = () => notes().map((note: Note) => note.noteId);
 
   const addNewNote = (newNote: Note) => {
     mutate((existingNotes = []) => [...existingNotes, newNote]);
@@ -308,6 +308,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
   return (
     <NotesContext.Provider value={{
       notes: () => notes(),
+      orderedNoteIds,
       error,
       addNewNote,
       deleteNote,
@@ -318,8 +319,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       updateSubitemText,
       deleteSubitem,
       swapNotesLocally,
-      updateNoteOrder,
-      noteIds
+      updateNoteOrder
     }}>
       {props.children}
     </NotesContext.Provider>

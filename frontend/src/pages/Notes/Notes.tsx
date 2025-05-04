@@ -14,6 +14,7 @@ const NotesContent = () => {
   const [activeDraggingNote, setActiveDraggingNote] = createSignal<Note | null>(null);
   const {
     notes,
+    orderedNoteIds,
     error,
     addNewNote,
     deleteNote,
@@ -23,9 +24,8 @@ const NotesContent = () => {
     updateSubitemCheckbox,
     updateSubitemText,
     deleteSubitem,
-    updateNoteOrder,
     swapNotesLocally,
-    noteIds
+    updateNoteOrder
   } = useNotes();
   
   const handleLogout = () => {
@@ -55,7 +55,7 @@ const NotesContent = () => {
     setActiveDraggingNote(null);
         
     // Post the reordered note IDs to the database after note has been released
-    await updateNoteOrder(noteIds());
+    await updateNoteOrder(orderedNoteIds());
   };
 
   return (
@@ -97,7 +97,7 @@ const NotesContent = () => {
           >
             <DragDropSensors>
               <div class="grid sticky-grid">
-                <SortableProvider ids={noteIds()}>
+                <SortableProvider ids={orderedNoteIds()}>
                   <For each={notes()}>
                     {(note) => {
                       const sortable = createSortable(note.noteId);
