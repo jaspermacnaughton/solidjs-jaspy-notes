@@ -7,7 +7,7 @@ interface NotesContextType {
   notes: Resource<Note[]>;
   orderedNoteIds: () => number[];
   error: () => string | null;
-  addNewNote: (newNote: Note) => void;
+  addNewNote: (newNote: Omit<Note, 'noteId' | 'displayOrder'>) => Promise<void>;
   deleteNote: (idTodelete: number) => Promise<void>;
   updateNoteTitle: (noteId: number, newTitle: string) => Promise<void>;
   updateNoteBody: (noteId: number, newBody: string) => Promise<void>;
@@ -50,9 +50,36 @@ export const NotesContextProvider: ParentComponent = (props) => {
   );
 
   const orderedNoteIds = () => notes().map((note: Note) => note.noteId);
-
-  const addNewNote = (newNote: Note) => {
-    mutate((existingNotes = []) => [...existingNotes, newNote]);
+  
+  const addNewNote = async (newNote: Omit<Note, 'noteId' | 'displayOrder'>) => {
+    setError(null);
+    
+    if (newNote.title.trim() === "") {
+      setError("Title is required");
+      return;
+    }
+    
+    try {
+      let newNoteDisplayOrder = notes()?.length ?? 0;
+      
+      const newNoteWithDisplayOrder = {...newNote, displayOrder: newNoteDisplayOrder};
+      
+      const response = await fetch('api/notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token()}`
+        },
+        body: JSON.stringify(newNoteWithDisplayOrder),
+      });
+      
+      const data = await handleApiResponse(response, auth.logout);
+      
+      mutate((existingNotes = []) => [...existingNotes, {noteId: data.noteId, ...newNoteWithDisplayOrder}]);
+      
+    } catch (err: any) {
+      setError(err.message);
+    }
   };
   
   const deleteNote = async (idTodelete: number) => {

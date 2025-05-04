@@ -1,14 +1,11 @@
 import { createSignal, For, Show } from "solid-js";
 
-import { useAuth } from "../../../context/AuthContext";
 import { useNotes } from "../../../context/NotesContext";
-import { handleApiResponse } from "../../../utils/api";
 import { SubitemType } from '../../../types/notes';
 import Subitem from "./Subitem";
 
 export default function NewNote() {
-  const auth = useAuth();
-  const { notes, addNewNote } = useNotes();
+  const { addNewNote } = useNotes();
   const [isAddingNewNote, setIsAddingNewNote] = createSignal(true);
   const [newTitle, setNewTitle] = createSignal("");
   const [newNoteType, setNewNoteType] = createSignal<'freetext' | 'subitems'>('freetext');
@@ -48,47 +45,19 @@ export default function NewNote() {
     setNewSubitems(items => items.filter(item => item !== subitem));
   };
 
-  const postNewNote = async () => {
-    setError(null);
+  const onAddNewNote = async () => {
+    await addNewNote({
+      title: newTitle(),
+      noteType: newNoteType(),
+      body: newNoteType() === 'freetext' ? newBody() : '',
+      subitems: newNoteType() === 'subitems' ? newSubitems() : [],
+    });
     
-    if (newTitle().trim() === "") {
-      setError("Title is required");
-      return;
-    }
-    
-    try {
-      let newNoteDisplayOrder = notes()?.length ?? 0;
-      
-      const newNote = {
-        title: newTitle(), 
-        noteType: newNoteType(),
-        body: newNoteType() === 'freetext' ? newBody() : '',
-        subitems: newNoteType() === 'subitems' ? newSubitems() : [],
-        displayOrder: newNoteDisplayOrder
-      };
-      
-      const response = await fetch('api/notes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token()}`
-        },
-        body: JSON.stringify(newNote),
-      });
-      
-      const data = await handleApiResponse(response, auth.logout);
-      
-      addNewNote({noteId: data.noteId, ...newNote});
-      
-      setNewTitle("");
-      // keep new note type same as what user previously chose
-      setNewBody("");
-      setNewSubitems([]);
-      
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
+    setNewTitle("");
+    // keep new note type same as what user previously chose
+    setNewBody("");
+    setNewSubitems([]);
+  }
 
   return (
     <Show
@@ -178,7 +147,7 @@ export default function NewNote() {
         )}
           
           <div>
-            <button class="w-12 h-12 m-4 p-0 btn text-xlg items-center justify-center" onClick={postNewNote}>+</button>
+            <button class="w-12 h-12 m-4 p-0 btn text-xlg items-center justify-center" onClick={onAddNewNote}>+</button>
           </div>
       </div>
     </Show>
