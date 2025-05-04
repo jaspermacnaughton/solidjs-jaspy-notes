@@ -1,10 +1,10 @@
-import { createContext, useContext, createResource, createSignal, ParentComponent } from "solid-js";
+import { createContext, useContext, createResource, createSignal, ParentComponent, Resource } from "solid-js";
 import { Note } from '../types/notes';
 import { useAuth } from './AuthContext';
 import { handleApiResponse } from '../utils/api';
 
 interface NotesContextType {
-  notes: () => Note[];
+  notes: Resource<Note[]>;
   orderedNoteIds: () => number[];
   error: () => string | null;
   addNewNote: (newNote: Note) => void;
@@ -38,12 +38,15 @@ export const NotesContextProvider: ParentComponent = (props) => {
     return data.notes;
   };
   
-  const [notes, { mutate }] = createResource(
+  const [notes, { mutate }] = createResource<Note[], string>(
     () => auth.token(),
     () => fetchNotes().catch(err => {
       setError(err.message);
       throw err;
-    })
+    }),
+    {
+      initialValue: []
+    }
   );
 
   const orderedNoteIds = () => notes().map((note: Note) => note.noteId);
@@ -307,7 +310,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
 
   return (
     <NotesContext.Provider value={{
-      notes: () => notes(),
+      notes,
       orderedNoteIds,
       error,
       addNewNote,

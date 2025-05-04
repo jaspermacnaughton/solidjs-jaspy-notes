@@ -34,13 +34,15 @@ const NotesContent = () => {
   };
 
   const handleDragStart = (event: any) => {
-    setActiveDraggingNote(notes().find((note: Note) => note.noteId === Number(event.draggable.id)) || null);
+    setActiveDraggingNote(notes()?.find((note: Note) => note.noteId === Number(event.draggable.id)) || null);
   };
   
   const handleDragOver = ({ draggable, droppable }: DragEvent) => {
     if (!draggable || !droppable) return;
     
     const currentNotes = notes();
+    if (!currentNotes) return;
+    
     const fromIndex = currentNotes.findIndex((note: Note) => note.noteId === Number(draggable.id));
     const toIndex = currentNotes.findIndex((note: Note) => note.noteId === Number(droppable.id));
     
@@ -86,7 +88,7 @@ const NotesContent = () => {
       
       <main class="flex-1">
         <Show
-          when={notes() !== undefined}
+          when={!notes.loading && !notes.error}
           fallback={<div>Loading...</div>}
         >
           <DragDropProvider 
