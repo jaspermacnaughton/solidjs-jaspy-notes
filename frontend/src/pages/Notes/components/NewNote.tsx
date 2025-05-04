@@ -1,17 +1,14 @@
 import { createSignal, For, Show } from "solid-js";
 
 import { useAuth } from "../../../context/AuthContext";
+import { useNotes } from "../../../context/NotesContext";
 import { handleApiResponse } from "../../../utils/api";
-import { Note, SubitemType } from '../../../types/notes';
+import { SubitemType } from '../../../types/notes';
 import Subitem from "./Subitem";
 
-interface NewNoteProps {
-  onNoteAddedToDatabase: (newNote: Note) => void;
-  notesLength: number;
-}
-
-export default function NewNote(props: NewNoteProps) {
+export default function NewNote() {
   const auth = useAuth();
+  const { notes, addNewNote } = useNotes();
   const [isAddingNewNote, setIsAddingNewNote] = createSignal(true);
   const [newTitle, setNewTitle] = createSignal("");
   const [newNoteType, setNewNoteType] = createSignal<'freetext' | 'subitems'>('freetext');
@@ -60,7 +57,15 @@ export default function NewNote(props: NewNoteProps) {
     }
     
     try {
-      let newNoteDisplayOrder = props.notesLength;
+      let newNoteDisplayOrder = notes()?.length ?? 0;
+      
+      const newNote = {
+        title: newTitle(), 
+        noteType: newNoteType(),
+        body: newNoteType() === 'freetext' ? newBody() : '',
+        subitems: newNoteType() === 'subitems' ? newSubitems() : [],
+        displayOrder: newNoteDisplayOrder
+      };
       
       const response = await fetch('api/notes', {
         method: 'POST',
@@ -68,26 +73,12 @@ export default function NewNote(props: NewNoteProps) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${auth.token()}`
         },
-        body: JSON.stringify({
-          title: newTitle(),
-          noteType: newNoteType(),
-          body: newNoteType() === 'freetext' ? newBody() : '',
-          subitems: newNoteType() === 'subitems' ? newSubitems() : [],
-          displayOrder: newNoteDisplayOrder
-        }),
+        body: JSON.stringify(newNote),
       });
       
       const data = await handleApiResponse(response, auth.logout);
-      props.onNoteAddedToDatabase(
-        {
-          noteId: data.noteId, 
-          title: newTitle(), 
-          noteType: newNoteType(),
-          body: newNoteType() === 'freetext' ? newBody() : '',
-          subitems: newNoteType() === 'subitems' ? newSubitems() : [],
-          displayOrder: newNoteDisplayOrder
-        }
-      );
+      
+      addNewNote({noteId: data.noteId, ...newNote});
       
       setNewTitle("");
       // keep new note type same as what user previously chose

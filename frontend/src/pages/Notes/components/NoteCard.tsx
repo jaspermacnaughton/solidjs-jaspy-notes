@@ -1,43 +1,38 @@
 import { createSignal, type Component, For, Show } from 'solid-js';
 
+import { useNotes } from '../../../context/NotesContext';
 import { Note, SubitemType } from '../../../types/notes';
 import Subitem from './Subitem';
 
 type NoteCardProps = {
   note: Note;
   sortable?: any; // TODO: export type Sortable from "@thisbeyond/solid-dnd";
-  onDelete: (noteId: number) => void;
-  onSaveTitleEdits: (noteId: number, newTitle: string) => Promise<void>;
-  onSaveFreeTextBodyEdits: (noteId: number, newBody: string) => Promise<void>;
-  onAddSubitem: (noteId: number, newText: string) => Promise<void>;
-  onUpdateSubitemCheckbox: (subitemId: number, isChecked: boolean) => Promise<void>;
-  onUpdateSubitemText: (subitemId: number, newText: string) => Promise<void>;
-  onDeleteSubitem: (subitemId: number) => Promise<void>;
 };
 
-const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
+const NoteCard: Component<NoteCardProps> = ({ sortable, note }) => {
+  const { deleteNote, updateNoteTitle, updateNoteBody, addNewSubitem, updateSubitemCheckbox, updateSubitemText, deleteSubitem } = useNotes();
   const [isEditingTitle, setIsEditingTitle] = createSignal(false);
-  const [currentTitle, setCurrentTitle] = createSignal(props.note.title);
+  const [currentTitle, setCurrentTitle] = createSignal(note.title);
   const [isEditingBody, setIsEditingBody] = createSignal(false);
-  const [currentBody, setCurrentBody] = createSignal(props.note.body);
+  const [currentBody, setCurrentBody] = createSignal(note.body);
   
   const getSubitemsWithEmpty = () => [
-    ...props.note.subitems,
-    { text: "", isChecked: false, noteId: props.note.noteId }
+    ...note.subitems,
+    { text: "", isChecked: false, noteId: note.noteId }
   ];
   
   const saveTitle = async () => {
-    await props.onSaveTitleEdits(props.note.noteId, currentTitle());
+    await updateNoteTitle(note.noteId, currentTitle());
     setIsEditingTitle(false);
   };
   
   const saveBody = async () => {
-    await props.onSaveFreeTextBodyEdits(props.note.noteId, currentBody());
+    await updateNoteBody(note.noteId, currentBody());
     setIsEditingBody(false);
   };
   
-  const addNewSubitem = async (newText: string) => {
-    await props.onAddSubitem(props.note.noteId, newText);
+  const handleAddNewSubitem = async (newText: string) => {
+    await addNewSubitem(note.noteId, newText);
   }
 
   const handleSubitemCheckboxUpdate = async (subitem: SubitemType) => {
@@ -45,7 +40,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
     
     try {
       if (subitem.subitemId) {
-        await props.onUpdateSubitemCheckbox(subitem.subitemId, subitem.isChecked);
+        await updateSubitemCheckbox(subitem.subitemId, subitem.isChecked);
       }
     } catch (error) {
       // Revert the checkbox if the API call fails
@@ -59,7 +54,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
     
     try {
       if (subitem.subitemId) {
-        await props.onUpdateSubitemText(subitem.subitemId, newText);
+        await updateSubitemText(subitem.subitemId, newText);
       }
     } catch (error) {
       // Revert the text if the API call fails
@@ -69,7 +64,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
 
   const handleSubitemDelete = async (subitem: SubitemType) => {
     if (subitem.subitemId) {
-      await props.onDeleteSubitem(subitem.subitemId);
+      await deleteSubitem(subitem.subitemId);
     }
   };
 
@@ -77,13 +72,13 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
     <div class="bg-white p-2 mx-auto sm:mx-0 mb-0 m-4 text-center rounded-md shadow-md flex flex-col min-h-[150px] w-[95%] sm:w-full">
       <div class="flex items-center justify-between w-full mb-1">
         <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-          onClick={() => props.onDelete(props.note.noteId)}>
+          onClick={() => deleteNote(note.noteId)}>
           delete
         </span>
         {isEditingTitle() ? (
           <div class="flex-grow flex items-center">
             <input
-              id={`note-${props.note.noteId}-title`}
+              id={`note-${note.noteId}-title`}
               type="text"
               class="w-full border border-gray-300 rounded-md p-1 text-center font-bold h-[1.5em]"
               value={currentTitle()}
@@ -92,7 +87,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
                 if (e.key === 'Enter') {
                   saveTitle();
                 } else if (e.key === 'Escape') {
-                  setCurrentTitle(props.note.title);
+                  setCurrentTitle(note.title);
                   setIsEditingTitle(false);
                 }
               }}
@@ -102,7 +97,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
           </div>
         ) : (
           <h2 class="flex-grow cursor-pointer hover:bg-gray-100 rounded px-1" onClick={() => setIsEditingTitle(true)}>
-            <b>{props.note.title}</b>
+            <b>{note.title}</b>
           </h2>
         )}
         <Show when={sortable} fallback={
@@ -119,12 +114,12 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
       <hr class="mb-2" />
       
       <div class="flex flex-col flex-grow">
-        {props.note.noteType === 'freetext' ? (
+        {note.noteType === 'freetext' ? (
           <>
             {isEditingBody() ? (
               <>{/* Editing note display*/}
               <textarea 
-                id={`note-${props.note.noteId}-body`}
+                id={`note-${note.noteId}-body`}
                 class="w-full h-full bg-gray-50 border border-gray-300 rounded-md p-1 resize-none" 
                 value={currentBody()}
                 onInput={(e) => setCurrentBody(e.currentTarget.value)}
@@ -134,7 +129,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
               <div class="flex items-center justify-between w-full mt-2">
                 <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
                   onClick={() => {
-                    setCurrentBody(props.note.body);
+                    setCurrentBody(note.body);
                     setIsEditingBody(false);
                   }}>
                   cancel
@@ -147,7 +142,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
             </>
             ) : (
               <>{/* Viewing note display*/}
-                <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">{props.note.body}</p>
+                <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">{note.body}</p>
                 
                 <div class="flex items-center justify-end w-full mt-2">
                   <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
@@ -166,7 +161,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, ...props }) => {
                   subitem={subitem}
                   isLast={index() === getSubitemsWithEmpty().length - 1}
                   isInDragHover={sortable !== undefined}
-                  onNewSubitemTextAdded={addNewSubitem}
+                  onNewSubitemTextAdded={handleAddNewSubitem}
                   onExistingSubitemTextUpdated={handleSubitemTextUpdate}
                   onCheckboxToggled={handleSubitemCheckboxUpdate}
                   onDelete={handleSubitemDelete}

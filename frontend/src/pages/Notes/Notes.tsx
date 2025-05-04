@@ -12,21 +12,7 @@ const NotesContent = () => {
   const auth = useAuth();
   const navigate = useNavigate();
   const [activeDraggingNote, setActiveDraggingNote] = createSignal<Note | null>(null);
-  const {
-    notes,
-    orderedNoteIds,
-    error,
-    addNewNote,
-    deleteNote,
-    updateNoteTitle,
-    updateNoteBody,
-    addNewSubitem,
-    updateSubitemCheckbox,
-    updateSubitemText,
-    deleteSubitem,
-    swapNotesLocally,
-    updateNoteOrder
-  } = useNotes();
+  const { notes, orderedNoteIds, error, swapNotesLocally, updateNoteOrder } = useNotes();
   
   const handleLogout = () => {
     auth.logout();
@@ -109,17 +95,7 @@ const NotesContent = () => {
                           class="touch-none"
                           classList={{ "opacity-25": sortable.isActiveDraggable }}
                         >
-                          <NoteCard
-                            note={note}
-                            sortable={sortable}
-                            onDelete={deleteNote}
-                            onSaveTitleEdits={updateNoteTitle}
-                            onSaveFreeTextBodyEdits={updateNoteBody}
-                            onAddSubitem={addNewSubitem}
-                            onUpdateSubitemCheckbox={updateSubitemCheckbox}
-                            onUpdateSubitemText={updateSubitemText}
-                            onDeleteSubitem={deleteSubitem}
-                          />
+                          <NoteCard note={note} sortable={sortable} />
                         </div>
                       );
                     }}
@@ -129,16 +105,7 @@ const NotesContent = () => {
             </DragDropSensors>
             <DragOverlay>
               <Show when={activeDraggingNote()}>
-                <NoteCard 
-                  note={activeDraggingNote()!}
-                  onDelete={deleteNote} 
-                  onSaveTitleEdits={updateNoteTitle}
-                  onSaveFreeTextBodyEdits={updateNoteBody}
-                  onAddSubitem={addNewSubitem}
-                  onUpdateSubitemCheckbox={updateSubitemCheckbox}
-                  onUpdateSubitemText={updateSubitemText}
-                  onDeleteSubitem={deleteSubitem}
-                />
+                <NoteCard note={activeDraggingNote()!} />
               </Show>
             </DragOverlay>
           </DragDropProvider>
@@ -146,10 +113,7 @@ const NotesContent = () => {
       </main>
       
       <footer class="text-right basis-auto mt-16 justify-center">
-        <NewNote 
-          onNoteAddedToDatabase={addNewNote}
-          notesLength={notes()?.length || 0}
-        />
+        <NewNote />
       </footer>
     </>
   );
