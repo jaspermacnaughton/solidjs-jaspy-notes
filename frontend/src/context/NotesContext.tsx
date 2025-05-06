@@ -47,6 +47,8 @@ export const NotesContextProvider: ParentComponent = (props) => {
     }),
     {
       initialValue: []
+      // TODO: Have storage be a store instead of a signal for more fine grained reactivity once that's not experimental
+      //       See createDeepSignal on https://docs.solidjs.com/reference/basic-reactivity/create-resource
     }
   );
 
