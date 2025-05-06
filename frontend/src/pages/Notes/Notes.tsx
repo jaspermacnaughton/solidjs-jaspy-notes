@@ -20,7 +20,7 @@ const NotesContent = () => {
     navigate("/login");
   };
 
-  const handleDragStart = (event: any) => {
+  const handleDragStart = (event: DragEvent) => {
     setActiveDraggingNote(notes()?.find((note: Note) => note.noteId === Number(event.draggable.id)) || null);
   };
   
