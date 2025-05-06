@@ -12,7 +12,7 @@ const createSubitemSchema = z.object({
 });
 
 const updateSubitemCheckboxSchema = z.object({
-  isChecked: z.boolean()
+  isCurrentlyChecked: z.boolean()
 });
 
 const updateSubitemTextSchema = z.object({
@@ -85,7 +85,7 @@ export const subitemsRoute = new Hono()
       `UPDATE public."Subitems" 
         SET is_checked = $1 
         WHERE subitem_id = $2`,
-      [updateData.isChecked, subitemId]
+      [!updateData.isCurrentlyChecked, subitemId]
     );
     
     return c.json({ success: true });

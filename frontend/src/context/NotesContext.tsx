@@ -12,7 +12,7 @@ interface NotesContextType {
   updateNoteTitle: (noteId: number, newTitle: string) => Promise<void>;
   updateNoteBody: (noteId: number, newBody: string) => Promise<void>;
   addNewSubitem: (noteId: number, newText: string) => Promise<void>;
-  updateSubitemCheckbox: (subitemId: number, isChecked: boolean) => Promise<void>;
+  updateSubitemCheckbox: (subitemId: number, isCurrentlyChecked: boolean) => Promise<void>;
   updateSubitemText: (subitemId: number, newText: string) => Promise<void>;
   deleteSubitem: (subitemId: number) => Promise<void>;
   swapNotesLocally: (fromIndex: number, toIndex: number) => void;
@@ -38,7 +38,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
     return data.notes;
   };
   
-  const [notes, { mutate }] = createResource<Note[], string>(
+  const [notes, { mutate: mutateNotes, refetch: refetchNotes }] = createResource<Note[], string>(
     () => auth.token(),
     () => fetchNotes().catch(err => {
       setError(err.message);
@@ -75,7 +75,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       
       const data = await handleApiResponse(response, auth.logout);
       
-      mutate((existingNotes = []) => [...existingNotes, {noteId: data.noteId, ...newNoteWithDisplayOrder}]);
+      mutateNotes((existingNotes = []) => [...existingNotes, {noteId: data.noteId, ...newNoteWithDisplayOrder}]);
       
     } catch (err: any) {
       setError(err.message);
@@ -98,7 +98,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       });
       
       await handleApiResponse(response, auth.logout);
-      mutate((existingNotes = []) => {
+      mutateNotes((existingNotes = []) => {
         const updatedNotes = [...existingNotes];
         const indexToDelete = existingNotes.findIndex((note: Note) => note.noteId == idTodelete);
         if (indexToDelete === -1) {
@@ -134,7 +134,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       });
       
       await handleApiResponse(response, auth.logout);
-      mutate((existingNotes = []) => {
+      mutateNotes((existingNotes = []) => {
         return existingNotes.map((note: Note) => 
           note.noteId === noteId 
             ? { 
@@ -166,7 +166,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       });
       
       await handleApiResponse(response, auth.logout);
-      mutate((existingNotes = []) => {
+      mutateNotes((existingNotes = []) => {
         return existingNotes.map((note: Note) => 
           note.noteId === noteId 
             ? { 
@@ -199,7 +199,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       
       const data = await handleApiResponse(response, auth.logout);
       
-      mutate((existingNotes = []) => {
+      mutateNotes((existingNotes = []) => {
         return existingNotes.map((note: Note) => 
           note.noteId === noteId
             ? {
@@ -209,12 +209,15 @@ export const NotesContextProvider: ParentComponent = (props) => {
             : note
         );
       });
+      
     } catch (err: any) {
       setError(err.message);
+      
+      throw new Error(err.message);
     }
   };
 
-  const updateSubitemCheckbox = async (subitemId: number, isChecked: boolean) => {
+  const updateSubitemCheckbox = async (subitemId: number, isCurrentlyChecked: boolean) => {
     setError(null);
     
     try {
@@ -225,24 +228,26 @@ export const NotesContextProvider: ParentComponent = (props) => {
           'Authorization': `Bearer ${auth.token()}`
         },
         body: JSON.stringify({
-          isChecked: isChecked
+          isCurrentlyChecked: isCurrentlyChecked
         }),
       });
       
       await handleApiResponse(response, auth.logout);
       
-      mutate((existingNotes = []) => {
+      mutateNotes((existingNotes = []) => {
         return existingNotes.map((note: Note) => ({
           ...note,
           subitems: note.subitems.map(subitem => 
             subitem.subitemId === subitemId 
-              ? { ...subitem, isChecked: isChecked }
+              ? { ...subitem, isChecked: !isCurrentlyChecked }
               : subitem
           )
         }));
       });
     } catch (err: any) {
       setError(err.message);
+      
+      refetchNotes();
     }
   };
 
@@ -263,7 +268,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       
       await handleApiResponse(response, auth.logout);
       
-      mutate((existingNotes = []) => {
+      mutateNotes((existingNotes = []) => {
         return existingNotes.map((note: Note) => ({
           ...note,
           subitems: note.subitems.map(subitem => 
@@ -273,8 +278,11 @@ export const NotesContextProvider: ParentComponent = (props) => {
           )
         }));
       });
+      
     } catch (err: any) {
       setError(err.message);
+      
+      refetchNotes();
     }
   };
 
@@ -291,7 +299,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       
       await handleApiResponse(response, auth.logout);
       
-      mutate((existingNotes = []) => {
+      mutateNotes((existingNotes = []) => {
         return existingNotes.map((note: Note) => ({
           ...note,
           subitems: note.subitems.filter(subitem => subitem.subitemId !== subitemId)
@@ -303,7 +311,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
   };
 
   const swapNotesLocally = async (fromIndex: number, toIndex: number) => {
-    mutate((existingNotes = []) => {
+    mutateNotes((existingNotes = []) => {
       const updatedNotes = [...existingNotes];
       const [movedNote] = updatedNotes.splice(fromIndex, 1);
       updatedNotes.splice(toIndex, 0, movedNote);

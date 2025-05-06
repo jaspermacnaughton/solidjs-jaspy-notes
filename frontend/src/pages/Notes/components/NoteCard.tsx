@@ -42,29 +42,17 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, note }) => {
   }
 
   const handleSubitemCheckboxUpdate = async (subitem: SubitemType) => {
-    subitem.isChecked = !subitem.isChecked;
     
-    try {
-      if (subitem.subitemId) {
-        await updateSubitemCheckbox(subitem.subitemId, subitem.isChecked);
-      }
-    } catch (error) {
-      // Revert the checkbox if the API call fails
-      subitem.isChecked = !subitem.isChecked;
+    if (subitem.subitemId) {
+      await updateSubitemCheckbox(subitem.subitemId, subitem.isChecked);
     }
   };
 
   const handleSubitemTextUpdate = async (subitem: SubitemType, newText: string) => {
-    const oldText = subitem.text;
     subitem.text = newText;
     
-    try {
-      if (subitem.subitemId) {
-        await updateSubitemText(subitem.subitemId, newText);
-      }
-    } catch (error) {
-      // Revert the text if the API call fails
-      subitem.text = oldText;
+    if (subitem.subitemId) {
+      await updateSubitemText(subitem.subitemId, newText);
     }
   };
 
