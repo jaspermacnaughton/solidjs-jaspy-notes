@@ -17,7 +17,7 @@ const Subitem: Component<SubitemProps> = (props) => {
   const checkboxId = props.isLast ? `note-${props.subitem.noteId}-blank-checkbox${idSuffix}` : `subitem-${props.subitem.subitemId}-checkbox${idSuffix}`
   const textId = props.isLast ? `note-${props.subitem.noteId}-blank-text${idSuffix}` : `subitem-${props.subitem.subitemId}-text${idSuffix}`
   
-  const handleTextUpdated = (textValue: string) => {
+  const onTextUpdated = (textValue: string) => {
     // If this is the last (blank) subitem we are typing in add that as a new subitem to the database
     if (props.isLast && textValue.length > 0) {
       props.onNewSubitemTextAdded(textValue)
@@ -45,7 +45,7 @@ const Subitem: Component<SubitemProps> = (props) => {
         }`}
         value={props.subitem.text}
         rows={props.subitem.text.split('\n').length}
-        onfocusout={(e) => handleTextUpdated(e.currentTarget.value)}
+        onfocusout={(e) => onTextUpdated(e.currentTarget.value)}
         placeholder={props.isLast ? "Add new..." : ""}
       />
       

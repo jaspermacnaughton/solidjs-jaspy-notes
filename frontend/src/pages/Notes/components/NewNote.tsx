@@ -7,33 +7,32 @@ import Subitem from "./Subitem";
 export default function NewNote() {
   const { addNewNote } = useNotes();
   const [isAddingNewNote, setIsAddingNewNote] = createSignal(true);
-  const [newTitle, setNewTitle] = createSignal("");
-  const [newNoteType, setNewNoteType] = createSignal<'freetext' | 'subitems'>('freetext');
-  const [newBody, setNewBody] = createSignal("");
-  const [newSubitems, setNewSubitems] = createSignal<SubitemType[]>([]);
+  const [title, setTitle] = createSignal("");
+  const [noteType, setNoteType] = createSignal<'freetext' | 'subitems'>('freetext');
+  const [body, setBody] = createSignal("");
+  const [subitems, setSubitems] = createSignal<SubitemType[]>([]);
 
-  
-  const getNewNoteSubitemsWithEmpty = () => [
-    ...newSubitems(),
+  const getSubitemsWithEmpty = () => [
+    ...subitems(),
     { text: "", isChecked: false, noteId: -1 }
   ];
 
-  const handleNewNoteAddSubitem = (newText: string) => {
+  const onNewSubitemTextAdded = (newText: string) => {
     if (newText.trim()) {
-      setNewSubitems(items => [...items, { text: newText, isChecked: false, noteId: -1 }]);
+      setSubitems(items => [...items, { text: newText, isChecked: false, noteId: -1 }]);
     }
   };
   
-  const handleNewNoteSubitemCheckboxUpdate = (subitem: SubitemType) => {
-    setNewSubitems(items => 
+  const onSubitemCheckboxToggled = (subitem: SubitemType) => {
+    setSubitems(items => 
       items.map(item => 
         item === subitem ? { ...item, isChecked: !item.isChecked } : item
       )
     );
   };
 
-  const handleNewNoteSubitemTextUpdate = (subitem: SubitemType, newText: string) => {
-    setNewSubitems(items => 
+  const onExistingSubitemTextUpdated = (subitem: SubitemType, newText: string) => {
+    setSubitems(items => 
       items.map(item => 
         item === subitem ? { ...item, text: newText } : item
       )
@@ -41,21 +40,21 @@ export default function NewNote() {
   };
 
   const handleNewNoteSubitemDelete = (subitem: SubitemType) => {
-    setNewSubitems(items => items.filter(item => item !== subitem));
+    setSubitems(items => items.filter(item => item !== subitem));
   };
 
   const onAddNewNote = async () => {
     await addNewNote({
-      title: newTitle(),
-      noteType: newNoteType(),
-      body: newNoteType() === 'freetext' ? newBody() : '',
-      subitems: newNoteType() === 'subitems' ? newSubitems() : [],
+      title: title(),
+      noteType: noteType(),
+      body: noteType() === 'freetext' ? body() : '',
+      subitems: noteType() === 'subitems' ? subitems() : [],
     });
     
-    setNewTitle("");
+    setTitle("");
     // keep new note type same as what user previously chose
-    setNewBody("");
-    setNewSubitems([]);
+    setBody("");
+    setSubitems([]);
   }
 
   return (
@@ -80,55 +79,55 @@ export default function NewNote() {
           id="newNoteTitle"
           class="bg-gray-50 border border-gray-300 rounded-md m-4 p-1"
           placeholder="title"
-          required value={newTitle()}
-          onInput={(e) => setNewTitle(e.currentTarget.value)} 
+          required value={title()}
+          onInput={(e) => setTitle(e.currentTarget.value)} 
         />
         
         <div class="flex items-center justify-center m-4 mt-2">
           <div class="flex w-full rounded-lg border border-gray-300 overflow-hidden">
             <button
               class={`flex-1 px-4 py-2 text-sm transition-colors ${
-                newNoteType() === 'freetext'
+                noteType() === 'freetext'
                   ? 'bg-gray-100 text-gray-900'
                   : 'bg-white text-gray-500 hover:bg-gray-50'
               }`}
-              onClick={() => setNewNoteType('freetext')}
+              onClick={() => setNoteType('freetext')}
             >
               Free Text
             </button>
             <button
               class={`flex-1 px-4 py-2 text-sm transition-colors border-l ${
-                newNoteType() === 'subitems'
+                noteType() === 'subitems'
                   ? 'bg-gray-100 text-gray-900'
                   : 'bg-white text-gray-500 hover:bg-gray-50'
               }`}
-              onClick={() => setNewNoteType('subitems')}
+              onClick={() => setNoteType('subitems')}
             >
               Subitems
             </button>
           </div>
         </div>
 
-        {newNoteType() === 'freetext' ? (
+        {noteType() === 'freetext' ? (
           <textarea
             id="newNoteBody"
             class="bg-gray-50 border border-gray-300 rounded-md m-4 mt-2 p-1 h-32" 
             placeholder="body"  
             required 
-            value={newBody()}
-            onInput={(e) => setNewBody(e.currentTarget.value)} 
+            value={body()}
+            onInput={(e) => setBody(e.currentTarget.value)} 
           />
         ) : (
           <div class="flex flex-col gap-2 m-4 mt-2">
-            <For each={getNewNoteSubitemsWithEmpty()}>
+            <For each={getSubitemsWithEmpty()}>
               {(subitem, index) => (
                 <Subitem
                   subitem={subitem}
-                  isLast={index() === getNewNoteSubitemsWithEmpty().length - 1}
+                  isLast={index() === getSubitemsWithEmpty().length - 1}
                   isInDragHover={false}
-                  onNewSubitemTextAdded={handleNewNoteAddSubitem}
-                  onExistingSubitemTextUpdated={handleNewNoteSubitemTextUpdate}
-                  onCheckboxToggled={handleNewNoteSubitemCheckboxUpdate}
+                  onNewSubitemTextAdded={onNewSubitemTextAdded}
+                  onExistingSubitemTextUpdated={onExistingSubitemTextUpdated}
+                  onCheckboxToggled={onSubitemCheckboxToggled}
                   onDelete={handleNewNoteSubitemDelete}
                 />
               )}

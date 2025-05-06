@@ -15,43 +15,43 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, note }) => {
   const [currentTitle, setCurrentTitle] = createSignal(note.title);
   const [isEditingBody, setIsEditingBody] = createSignal(false);
   const [currentBody, setCurrentBody] = createSignal(note.body);
-  const [newSubitem, setNewSubitem] = createSignal({ text: "", isChecked: false, noteId: note.noteId });
+  const [blankNewSubitem, setBlankNewSubitem] = createSignal({ text: "", isChecked: false, noteId: note.noteId });
   
   const getSubitemsWithEmpty = () => [
     ...note.subitems,
-    newSubitem()
+    blankNewSubitem()
   ];
   
-  const saveTitle = async () => {
+  const onSaveTitle = async () => {
     await updateNoteTitle(note.noteId, currentTitle());
     setIsEditingTitle(false);
   };
   
-  const saveBody = async () => {
+  const onSaveBody = async () => {
     await updateNoteBody(note.noteId, currentBody());
     setIsEditingBody(false);
   };
   
-  const handleAddNewSubitem = async (newText: string) => {
+  const onNewSubitemTextAdded = async (newText: string) => {
     try {
-      await addNewSubitem(note.noteId, newText, newSubitem().isChecked);
+      await addNewSubitem(note.noteId, newText, blankNewSubitem().isChecked);
       
     } catch (error) {
       // Revert to a blank new subitem state if API call fails
-      setNewSubitem({ text: "", isChecked: false, noteId: note.noteId });
+      setBlankNewSubitem({ text: "", isChecked: false, noteId: note.noteId });
     }
   }
 
-  const handleSubitemCheckboxUpdate = async (subitem: SubitemType) => {
+  const onSubitemCheckboxToggled = async (subitem: SubitemType) => {
     if (subitem.subitemId) {
       await updateSubitemCheckbox(subitem.subitemId, subitem.isChecked);
       
     } else {
-      setNewSubitem({ text: "", isChecked: !subitem.isChecked, noteId: note.noteId });
+      setBlankNewSubitem({ text: "", isChecked: !subitem.isChecked, noteId: note.noteId });
     }
   };
 
-  const handleSubitemTextUpdate = async (subitem: SubitemType, newText: string) => {
+  const onExistingSubitemTextUpdated = async (subitem: SubitemType, newText: string) => {
     subitem.text = newText;
     
     if (subitem.subitemId) {
@@ -59,7 +59,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, note }) => {
     }
   };
 
-  const handleSubitemDelete = async (subitem: SubitemType) => {
+  const onSubitemDelete = async (subitem: SubitemType) => {
     if (subitem.subitemId) {
       await deleteSubitem(subitem.subitemId);
     }
@@ -82,13 +82,13 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, note }) => {
               onInput={(e) => setCurrentTitle(e.currentTarget.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
-                  saveTitle();
+                  onSaveTitle();
                 } else if (e.key === 'Escape') {
                   setCurrentTitle(note.title);
                   setIsEditingTitle(false);
                 }
               }}
-              onBlur={saveTitle}
+              onBlur={onSaveTitle}
               autofocus
             />
           </div>
@@ -132,7 +132,7 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, note }) => {
                   cancel
                 </button>
                 <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-                  onClick={saveBody}>
+                  onClick={onSaveBody}>
                   save
                 </button>
               </div>
@@ -158,10 +158,10 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, note }) => {
                   subitem={subitem}
                   isLast={index() === getSubitemsWithEmpty().length - 1}
                   isInDragHover={sortable !== undefined}
-                  onNewSubitemTextAdded={handleAddNewSubitem}
-                  onExistingSubitemTextUpdated={handleSubitemTextUpdate}
-                  onCheckboxToggled={handleSubitemCheckboxUpdate}
-                  onDelete={handleSubitemDelete}
+                  onNewSubitemTextAdded={onNewSubitemTextAdded}
+                  onExistingSubitemTextUpdated={onExistingSubitemTextUpdated}
+                  onCheckboxToggled={onSubitemCheckboxToggled}
+                  onDelete={onSubitemDelete}
                 />
               )}
             </For>
