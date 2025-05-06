@@ -15,10 +15,11 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, note }) => {
   const [currentTitle, setCurrentTitle] = createSignal(note.title);
   const [isEditingBody, setIsEditingBody] = createSignal(false);
   const [currentBody, setCurrentBody] = createSignal(note.body);
+  const [newSubitem, setNewSubitem] = createSignal({ text: "", isChecked: false, noteId: note.noteId });
   
   const getSubitemsWithEmpty = () => [
     ...note.subitems,
-    { text: "", isChecked: false, noteId: note.noteId }
+    newSubitem()
   ];
   
   const saveTitle = async () => {
@@ -32,7 +33,12 @@ const NoteCard: Component<NoteCardProps> = ({ sortable, note }) => {
   };
   
   const handleAddNewSubitem = async (newText: string) => {
-    await addNewSubitem(note.noteId, newText);
+    try {
+      await addNewSubitem(note.noteId, newText);
+    } catch (error) {
+      // Revert to a blank new subitem state if API call fails
+      setNewSubitem({ text: "", isChecked: false, noteId: note.noteId });
+    }
   }
 
   const handleSubitemCheckboxUpdate = async (subitem: SubitemType) => {
