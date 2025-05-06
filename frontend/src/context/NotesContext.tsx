@@ -11,7 +11,7 @@ interface NotesContextType {
   deleteNote: (idTodelete: number) => Promise<void>;
   updateNoteTitle: (noteId: number, newTitle: string) => Promise<void>;
   updateNoteBody: (noteId: number, newBody: string) => Promise<void>;
-  addNewSubitem: (noteId: number, newText: string) => Promise<void>;
+  addNewSubitem: (noteId: number, newText: string, checkBoxState: boolean) => Promise<void>;
   updateSubitemCheckbox: (subitemId: number, isCurrentlyChecked: boolean) => Promise<void>;
   updateSubitemText: (subitemId: number, newText: string) => Promise<void>;
   deleteSubitem: (subitemId: number) => Promise<void>;
@@ -184,7 +184,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
     }
   };
   
-  const addNewSubitem = async (noteId: number, newText: string) => { 
+  const addNewSubitem = async (noteId: number, newText: string, checkBoxState: boolean) => { 
     setError(null);
     
     try {
@@ -196,7 +196,8 @@ export const NotesContextProvider: ParentComponent = (props) => {
         },
         body: JSON.stringify({
           noteId: noteId,
-          text: newText
+          text: newText,
+          isChecked: checkBoxState
         }),
       });
       
@@ -207,7 +208,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
           note.noteId === noteId
             ? {
                 ...note,
-                subitems: [...note.subitems, { subitemId: data.subitemId, text: newText, isChecked: false, noteId: noteId }]
+                subitems: [...note.subitems, { subitemId: data.subitemId, text: newText, isChecked: checkBoxState, noteId: noteId }]
               }
             : note
         );

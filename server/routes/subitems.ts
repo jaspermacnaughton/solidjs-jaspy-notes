@@ -8,7 +8,8 @@ import type { AuthedContext } from '../middleware/auth';
 
 const createSubitemSchema = z.object({
   noteId: z.number().int(),
-  text: z.string()
+  text: z.string(),
+  isChecked: z.boolean()
 });
 
 const updateSubitemCheckboxSchema = z.object({
@@ -25,7 +26,7 @@ export const subitemsRoute = new Hono()
   const postgresClient = getPostgresClient();
   
   try {
-    const { noteId, text } = await c.req.json();
+    const { noteId, text, isChecked } = await c.req.json();
     
     await postgresClient.connect();
     
@@ -43,9 +44,9 @@ export const subitemsRoute = new Hono()
     // Create the new subitem
     const newSubitemRes = await postgresClient.query(
       `INSERT INTO public."Subitems" (note_id, text, is_checked)
-      VALUES ($1, $2, false)
+      VALUES ($1, $2, $3)
       RETURNING subitem_id`,
-      [noteId, text]
+      [noteId, text, isChecked]
     );
     
     return c.json({ 
