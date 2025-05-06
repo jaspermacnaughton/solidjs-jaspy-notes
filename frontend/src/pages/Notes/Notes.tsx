@@ -13,6 +13,7 @@ const NotesContent = () => {
   const navigate = useNavigate();
   const [activeDraggingNote, setActiveDraggingNote] = createSignal<Note | null>(null);
   const { notes, orderedNoteIds, error, swapNotesLocally, updateNoteOrder } = useNotes();
+  const [notesSwappedLocally, setNotesSwappedLocally] = createSignal<boolean>(false);
   
   const handleLogout = () => {
     auth.logout();
@@ -37,13 +38,17 @@ const NotesContent = () => {
     
     // Update our local state while user is dragging a note
     swapNotesLocally(fromIndex, toIndex);
+    setNotesSwappedLocally(true);
   };
 
   const handleDragEnd = async () => {
     setActiveDraggingNote(null);
-        
-    // Post the reordered note IDs to the database after note has been released
-    await updateNoteOrder(orderedNoteIds());
+    
+    if (notesSwappedLocally()) {
+      // Post the reordered note IDs to the database after note has been released
+      await updateNoteOrder(orderedNoteIds());
+      setNotesSwappedLocally(false);
+    }
   };
 
   return (
