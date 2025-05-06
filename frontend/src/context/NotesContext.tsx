@@ -24,6 +24,7 @@ const NotesContext = createContext<NotesContextType>();
 export const NotesContextProvider: ParentComponent = (props) => {
   const auth = useAuth();
   const [error, setError] = createSignal<string | null>(null);
+  const [notesSwappedLocally, setNotesSwappedLocally] = createSignal<boolean>(false);
   
   const fetchNotes = async () => {
     const response = await fetch("api/notes", {
@@ -320,10 +321,15 @@ export const NotesContextProvider: ParentComponent = (props) => {
         displayOrder: index
       }));
     });
+    
+    setNotesSwappedLocally(true);
   };
       
   const updateNoteOrder = async (noteIds: number[]) => {
     setError(null);
+    if (!notesSwappedLocally()) {
+      return;
+    }
     
     try {
       const response = await fetch('api/notes/reorder', {
@@ -338,8 +344,13 @@ export const NotesContextProvider: ParentComponent = (props) => {
       });
       
       await handleApiResponse(response, auth.logout);
+      
+      setNotesSwappedLocally(false);
+      
     } catch (err: any) {
       setError(err.message);
+      
+      refetchNotes();
     }
   };
 
