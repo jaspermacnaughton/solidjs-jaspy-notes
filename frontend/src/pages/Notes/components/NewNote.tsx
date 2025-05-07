@@ -10,39 +10,10 @@ export default function NewNote() {
   const [title, setTitle] = createSignal("");
   const [noteType, setNoteType] = createSignal<'freetext' | 'subitems'>('freetext');
   const [body, setBody] = createSignal("");
+  const [subitemTempId, setSubitemTempId] = createSignal(-1);
   const [subitems, setSubitems] = createSignal<SubitemType[]>([]);
-
-  const getSubitemsWithEmpty = () => [
-    ...subitems(),
-    { text: "", isChecked: false, noteId: -1 }
-  ];
-
-  const onNewSubitemTextAdded = (newText: string) => {
-    if (newText.trim()) {
-      setSubitems(items => [...items, { text: newText, isChecked: false, noteId: -1 }]);
-    }
-  };
+  const [newSubitem, setNewSubitem] = createSignal<SubitemType>({ text: "", isChecked: false, noteId: -1 });
   
-  const onSubitemCheckboxToggled = (subitem: SubitemType) => {
-    setSubitems(items => 
-      items.map(item => 
-        item === subitem ? { ...item, isChecked: !item.isChecked } : item
-      )
-    );
-  };
-
-  const onExistingSubitemTextUpdated = (subitem: SubitemType, newText: string) => {
-    setSubitems(items => 
-      items.map(item => 
-        item === subitem ? { ...item, text: newText } : item
-      )
-    );
-  };
-
-  const handleNewNoteSubitemDelete = (subitem: SubitemType) => {
-    setSubitems(items => items.filter(item => item !== subitem));
-  };
-
   const onAddNewNote = async () => {
     await addNewNote({
       title: title(),
@@ -56,6 +27,38 @@ export default function NewNote() {
     setBody("");
     setSubitems([]);
   }
+
+  const onNewSubitemTextAdded = (_: SubitemType, newText: string) => {
+    if (newText.trim() !== "") {
+      setSubitems(items => [...items, { subitemId: subitemTempId(), text: newText, isChecked: newSubitem().isChecked, noteId: -1 }]);
+      setSubitemTempId(subitemTempId() - 1);
+      setNewSubitem({ text: "", isChecked: newSubitem().isChecked, noteId: -1 });
+    }
+  };
+
+  const onExistingSubitemTextUpdated = (subitem: SubitemType, newText: string) => {
+    setSubitems(items => 
+      items.map(item => 
+        item.subitemId === subitem.subitemId ? { ...item, text: newText } : item
+      )
+    );
+  };
+  
+  const onNewSubitemCheckboxToggled = (_: SubitemType) => {
+    setNewSubitem({ ...newSubitem(), isChecked: !newSubitem().isChecked });
+  };
+  
+  const onExistingSubitemCheckboxToggled = (subitem: SubitemType) => {
+    setSubitems(items => 
+      items.map(item => 
+        item.subitemId === subitem.subitemId ? { ...item, isChecked: !item.isChecked } : item
+      )
+    );
+  };
+
+  const onSubitemDelete = (subitem: SubitemType) => {
+    setSubitems(items => items.filter(item => item !== subitem));
+  };
 
   return (
     <Show
@@ -119,19 +122,28 @@ export default function NewNote() {
           />
         ) : (
           <div class="flex flex-col gap-2 m-4 mt-2">
-            <For each={getSubitemsWithEmpty()}>
-              {(subitem, index) => (
+            <For each={subitems()}>
+              {(subitem) => (
                 <Subitem
                   subitem={subitem}
-                  isLast={index() === getSubitemsWithEmpty().length - 1}
+                  isBlankNewSubitem={false}
                   isInDragHover={false}
-                  onNewSubitemTextAdded={onNewSubitemTextAdded}
-                  onExistingSubitemTextUpdated={onExistingSubitemTextUpdated}
-                  onCheckboxToggled={onSubitemCheckboxToggled}
-                  onDelete={handleNewNoteSubitemDelete}
+                  onTextUpdated={onExistingSubitemTextUpdated}
+                  onCheckboxToggled={onExistingSubitemCheckboxToggled}
+                  onDelete={onSubitemDelete}
                 />
               )}
             </For>
+            
+            {/* Blank placeholder new subitem */}
+            <Subitem
+              subitem={newSubitem()}
+              isBlankNewSubitem={true}
+              isInDragHover={false}
+              onTextUpdated={onNewSubitemTextAdded}
+              onCheckboxToggled={onNewSubitemCheckboxToggled}
+              onDelete={() => {}}
+            />
           </div>
         )}
           

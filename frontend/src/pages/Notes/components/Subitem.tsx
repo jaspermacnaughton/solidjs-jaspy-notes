@@ -4,29 +4,17 @@ import { SubitemType } from "../../../types/notes";
 
 type SubitemProps = {
   subitem: SubitemType;
-  isLast: boolean;
+  isBlankNewSubitem: boolean;
   isInDragHover: boolean;
-  onNewSubitemTextAdded: (newText: string) => void;
-  onExistingSubitemTextUpdated: (subitem: SubitemType, newText: string) => void;
+  onTextUpdated: (subitem: SubitemType, newText: string) => void;
   onCheckboxToggled: (subitem: SubitemType) => void;
-  onDelete?: (subitem: SubitemType) => void;
+  onDelete: (subitem: SubitemType) => void;
 }
 
 const Subitem: Component<SubitemProps> = (props) => {
-  const idSuffix = props.isInDragHover ? '-drag-hover' : ''
-  const checkboxId = props.isLast ? `note-${props.subitem.noteId}-blank-checkbox${idSuffix}` : `subitem-${props.subitem.subitemId}-checkbox${idSuffix}`
-  const textId = props.isLast ? `note-${props.subitem.noteId}-blank-text${idSuffix}` : `subitem-${props.subitem.subitemId}-text${idSuffix}`
-  
-  const onTextUpdated = (textValue: string) => {
-    // If this is the last (blank) subitem we are typing in add that as a new subitem to the database
-    if (props.isLast && textValue.length > 0) {
-      props.onNewSubitemTextAdded(textValue)
-    }
-    // Only update an existing subitem in the database if the text has changed
-    else if (props.subitem.text !== textValue) {
-      props.onExistingSubitemTextUpdated(props.subitem, textValue)
-    }
-  }
+  const idSuffix = props.isInDragHover ? '-drag-hover' : '';
+  const checkboxId = props.isBlankNewSubitem ? `note-${props.subitem.noteId}-blank-checkbox${idSuffix}` : `subitem-${props.subitem.subitemId}-checkbox${idSuffix}`;
+  const textId = props.isBlankNewSubitem ? `note-${props.subitem.noteId}-blank-text${idSuffix}` : `subitem-${props.subitem.subitemId}-text${idSuffix}`;
   
   return (
     <div class="flex items-center gap-2 p-1 border border-gray-200 rounded-md">
@@ -45,13 +33,13 @@ const Subitem: Component<SubitemProps> = (props) => {
         }`}
         value={props.subitem.text}
         rows={props.subitem.text.split('\n').length}
-        onfocusout={(e) => onTextUpdated(e.currentTarget.value)}
-        placeholder={props.isLast ? "Add new..." : ""}
+        onfocusout={(e) => props.onTextUpdated(props.subitem, e.currentTarget.value)}
+        placeholder={props.isBlankNewSubitem ? "Add new..." : ""}
       />
       
-      <Show when={!props.isLast}>
+      <Show when={!props.isBlankNewSubitem}>
         <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm mr-1 align-middle"
-          onClick={() => props.onDelete && props.onDelete(props.subitem)}
+          onClick={() => props.onDelete(props.subitem)}
         >
           delete
         </span>
