@@ -1,4 +1,4 @@
-import { createSignal, For, Show } from "solid-js";
+import { createSignal, For, Show, createEffect } from "solid-js";
 import { createSortable, DragDropProvider, DragDropSensors, DragEvent, SortableProvider, closestCenter, DragOverlay } from "@thisbeyond/solid-dnd";
 import { useNavigate } from "@solidjs/router";
 
@@ -14,6 +14,13 @@ const NotesContent = () => {
   const [activeDraggingNote, setActiveDraggingNote] = createSignal<Note | null>(null);
   const { notes, orderedNoteIds, error, swapNotesLocally, updateNoteOrder } = useNotes();
   
+  // Add authentication check effect to rerun whenever the auth signals change
+  createEffect(() => {
+    if (!auth.isLoading() && !auth.isAuthenticated()) {
+      navigate("/login", { replace: true });
+    }
+  });
+
   const handleLogout = () => {
     auth.logout();
     navigate("/login");
