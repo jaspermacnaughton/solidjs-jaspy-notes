@@ -101,6 +101,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       });
       
       await handleApiResponse(response, auth.logout);
+      
       mutateNotes((existingNotes = []) => {
         const updatedNotes = [...existingNotes];
         const indexToDelete = existingNotes.findIndex((note: Note) => note.noteId == idTodelete);
@@ -137,6 +138,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       });
       
       await handleApiResponse(response, auth.logout);
+      
       mutateNotes((existingNotes = []) => {
         return existingNotes.map((note: Note) => 
           note.noteId === noteId 
@@ -169,6 +171,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       });
       
       await handleApiResponse(response, auth.logout);
+      
       mutateNotes((existingNotes = []) => {
         return existingNotes.map((note: Note) => 
           note.noteId === noteId 
