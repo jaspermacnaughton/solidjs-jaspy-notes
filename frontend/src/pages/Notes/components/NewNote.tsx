@@ -6,7 +6,7 @@ import Subitem from "./Subitem";
 
 export default function NewNote() {
   const { addNewNote } = useNotes();
-  const [isAddingNewNote, setIsAddingNewNote] = createSignal(true);
+  const [isNewNoteModalOpen, setIsNewNoteModalOpen] = createSignal(true);
   const [title, setTitle] = createSignal("");
   const [noteType, setNoteType] = createSignal<'freetext' | 'subitems'>('freetext');
   const [body, setBody] = createSignal("");
@@ -62,8 +62,8 @@ export default function NewNote() {
 
   return (
     <Show
-      when={isAddingNewNote()}
-      fallback={<button class="w-12 h-12 m-4 p-0 btn text-xlg items-center justify-center" onClick={() => setIsAddingNewNote(true)}>+</button>}
+      when={isNewNoteModalOpen()}
+      fallback={<button class="w-12 h-12 m-4 p-0 btn text-xlg items-center justify-center" onClick={() => setIsNewNoteModalOpen(true)}>+</button>}
     >
       
       <div class="bg-white rounded-md shadow-md sm:float-right min-w-80 w-[95%] sm:w-1/4 flex flex-col mb-6 sm:mb-4 mx-auto sm:mx-0">
@@ -71,7 +71,7 @@ export default function NewNote() {
           <div class="w-6"></div>
           <h3 class="flex-grow text-center m-2 text-xl"><b>New Note</b></h3>
           <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm mr-2"
-            onClick={() => setIsAddingNewNote(false)}>
+            onClick={() => setIsNewNoteModalOpen(false)}>
               cancel
           </span>
         </div>
