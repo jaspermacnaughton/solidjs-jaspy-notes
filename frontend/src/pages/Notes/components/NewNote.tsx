@@ -128,7 +128,7 @@ export default function NewNote() {
                   subitem={subitem}
                   isBlankNewSubitem={false}
                   isInDragHover={false}
-                  onTextUpdated={onExistingSubitemTextUpdated}
+                  onFocusOut={onExistingSubitemTextUpdated}
                   onCheckboxToggled={onExistingSubitemCheckboxToggled}
                   onDelete={onSubitemDelete}
                 />
@@ -140,7 +140,7 @@ export default function NewNote() {
               subitem={newSubitem()}
               isBlankNewSubitem={true}
               isInDragHover={false}
-              onTextUpdated={onNewSubitemTextAdded}
+              onFocusOut={onNewSubitemTextAdded}
               onCheckboxToggled={onNewSubitemCheckboxToggled}
               onDelete={() => {}}
             />

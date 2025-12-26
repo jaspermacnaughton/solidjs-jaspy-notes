@@ -159,7 +159,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
                   subitem={subitem}
                   isBlankNewSubitem={false}
                   isInDragHover={props.sortable !== undefined}
-                  onTextUpdated={onExistingSubitemTextUpdated}
+                  onFocusOut={onExistingSubitemTextUpdated}
                   onCheckboxToggled={onSubitemCheckboxToggled}
                   onDelete={onSubitemDelete}
                 />
@@ -171,7 +171,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
               subitem={blankNewSubitem()}
               isBlankNewSubitem={true}
               isInDragHover={props.sortable !== undefined}
-              onTextUpdated={onNewSubitemTextAdded}
+              onFocusOut={onNewSubitemTextAdded}
               onCheckboxToggled={onSubitemCheckboxToggled}
               onDelete={() => {}}
             />
