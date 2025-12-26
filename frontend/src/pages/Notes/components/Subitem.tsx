@@ -6,6 +6,7 @@ type SubitemProps = {
   subitem: SubitemType;
   isBlankNewSubitem: boolean;
   isInDragHover: boolean;
+  onTextChange?: (newText: string) => void;
   onFocusOut: (subitem: SubitemType, newText: string) => void;
   onCheckboxToggled: (subitem: SubitemType) => void;
   onDelete: (subitem: SubitemType) => void;
@@ -33,6 +34,7 @@ const Subitem: Component<SubitemProps> = (props) => {
         }`}
         value={props.subitem.text}
         rows={props.subitem.text.split('\n').length}
+        onInput={(e) => props.onTextChange?.(e.currentTarget.value)}
         onfocusout={(e) => props.onFocusOut(props.subitem, e.currentTarget.value)}
         placeholder={props.isBlankNewSubitem ? "Add new..." : ""}
       />

@@ -7,6 +7,7 @@ import Subitem from "./Subitem";
 export default function NewNote() {
   const { addNewNote } = useNotes();
   const [isNewNoteModalOpen, setIsNewNoteModalOpen] = createSignal(true);
+  const [isProcessingNoteCreation, setIsProcessingNoteCreation] = createSignal(false);
   const [title, setTitle] = createSignal("");
   const [noteType, setNoteType] = createSignal<'freetext' | 'subitems'>('freetext');
   const [body, setBody] = createSignal("");
@@ -15,6 +16,14 @@ export default function NewNote() {
   const [newSubitem, setNewSubitem] = createSignal<SubitemType>({ text: "", isChecked: false, noteId: -1 });
   
   const onAddNewNote = async () => {
+    console.log('Adding a new note with subitem text:', newSubitem().text);
+    
+    if (newSubitem().text.trim() !== "") {
+      setSubitems(items => [...items, { subitemId: subitemTempId(), text: newSubitem().text.trim(), isChecked: newSubitem().isChecked, noteId: -1 }]);
+      setSubitemTempId(subitemTempId() - 1);
+      setNewSubitem({ text: "", isChecked: newSubitem().isChecked, noteId: -1 });
+    }
+    
     await addNewNote({
       title: title(),
       noteType: noteType(),
@@ -26,9 +35,22 @@ export default function NewNote() {
     // keep new note type same as what user previously chose
     setBody("");
     setSubitems([]);
+    
+    // reset our active processing flag
+    setIsProcessingNoteCreation(false);
   }
+  
+  const onNewSubitemTextChange = (newText: string) => {
+    // keep ref to this up to date
+    setNewSubitem({ ...newSubitem(), text: newText });
+  };
 
   const onNewSubitemTextAdded = (_: SubitemType, newText: string) => {
+    // Don't add subitem to list if we're in the process of creating the note - let that func handle
+    if (isProcessingNoteCreation()) {
+      return;
+    }
+    
     if (newText.trim() !== "") {
       setSubitems(items => [...items, { subitemId: subitemTempId(), text: newText, isChecked: newSubitem().isChecked, noteId: -1 }]);
       setSubitemTempId(subitemTempId() - 1);
@@ -140,6 +162,7 @@ export default function NewNote() {
               subitem={newSubitem()}
               isBlankNewSubitem={true}
               isInDragHover={false}
+              onTextChange={onNewSubitemTextChange}
               onFocusOut={onNewSubitemTextAdded}
               onCheckboxToggled={onNewSubitemCheckboxToggled}
               onDelete={() => {}}
@@ -148,7 +171,17 @@ export default function NewNote() {
         )}
           
           <div>
-            <button class="w-12 h-12 m-4 p-0 btn text-xlg items-center justify-center" onClick={onAddNewNote}>+</button>
+            <button class="w-12 h-12 m-4 p-0 btn text-xlg items-center justify-center" 
+              onMouseDown={() => {
+                // Set flag before focusout fires to prevent subitem from being added to list
+                setIsProcessingNoteCreation(true);
+              }}
+              onClick={onAddNewNote}
+              onMouseUp={() => {
+                // Reset flag after mouseup to allow subitem to be added to list
+                setIsProcessingNoteCreation(false);
+              }}
+            >+</button>
           </div>
       </div>
     </Show>
