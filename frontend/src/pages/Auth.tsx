@@ -2,28 +2,30 @@ import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = createSignal(true);
   const [username, setUsername] = createSignal("");
   const [password, setPassword] = createSignal("");
-  const [error, setError] = createSignal<string | null>(null);
   const auth = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
-    setError(null);
 
     try {
       if (isLogin()) {
         await auth.login(username(), password());
+        toast.showSuccess("Successfully logged in!");
       } else {
         await auth.register(username(), password());
+        toast.showSuccess("Account created successfully!");
       }
       navigate("/");
     } catch (err: any) {
-      setError(err.message);
+      toast.showError(err.message);
     }
   };
 
@@ -44,12 +46,6 @@ export default function Auth() {
         </div>
 
         <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          {error() && (
-            <div class="text-red-500 bg-red-200 px-4 py-2 mb-4 rounded">
-              {error()}
-            </div>
-          )}
-
           <form class="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label class="block text-sm font-medium leading-6">

@@ -1,12 +1,12 @@
 import { createContext, useContext, createResource, createSignal, ParentComponent, Resource } from "solid-js";
 import { Note } from '../types/notes';
 import { useAuth } from './AuthContext';
+import { useToast } from './ToastContext';
 import { handleApiResponse } from '../utils/api';
 
 interface NotesContextType {
   notes: Resource<Note[]>;
   orderedNoteIds: () => number[];
-  error: () => string | null;
   addNewNote: (newNote: Omit<Note, 'noteId' | 'displayOrder'>) => Promise<void>;
   deleteNote: (idTodelete: number) => Promise<void>;
   updateNoteTitle: (noteId: number, newTitle: string) => Promise<void>;
@@ -23,7 +23,7 @@ const NotesContext = createContext<NotesContextType>();
 
 export const NotesContextProvider: ParentComponent = (props) => {
   const auth = useAuth();
-  const [error, setError] = createSignal<string | null>(null);
+  const toast = useToast();
   const [notesSwappedLocally, setNotesSwappedLocally] = createSignal<boolean>(false);
   
   const fetchNotes = async () => {
@@ -42,7 +42,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
   const [notes, { mutate: mutateNotes, refetch: refetchNotes }] = createResource<Note[], string>(
     () => auth.token(),
     () => fetchNotes().catch(err => {
-      setError(err.message);
+      toast.showError(err.message);
       throw err;
     }),
     {
@@ -55,10 +55,8 @@ export const NotesContextProvider: ParentComponent = (props) => {
   const orderedNoteIds = () => notes().map((note: Note) => note.noteId);
   
   const addNewNote = async (newNote: Omit<Note, 'noteId' | 'displayOrder'>) => {
-    setError(null);
-    
     if (newNote.title.trim() === "") {
-      setError("Title is required");
+      toast.showError("Title is required");
       return;
     }
     
@@ -79,15 +77,14 @@ export const NotesContextProvider: ParentComponent = (props) => {
       const data = await handleApiResponse(response, auth.logout);
       
       mutateNotes((existingNotes = []) => [...existingNotes, {noteId: data.noteId, ...newNoteWithDisplayOrder}]);
+      toast.showSuccess("Note created successfully");
       
     } catch (err: any) {
-      setError(err.message);
+      toast.showError(err.message);
     }
   };
   
   const deleteNote = async (idTodelete: number) => {
-    setError(null);
-    
     try {
       const response = await fetch('api/notes', {
         method: 'DELETE',
@@ -117,13 +114,11 @@ export const NotesContextProvider: ParentComponent = (props) => {
       });
       
     } catch (err: any) {
-      setError(err.message);
+      toast.showError(err.message);
     }
   };
 
   const updateNoteTitle = async (noteId: number, newTitle: string) => {
-    setError(null);
-    
     try {
       const response = await fetch('api/notes/title', {
         method: 'PUT',
@@ -150,13 +145,11 @@ export const NotesContextProvider: ParentComponent = (props) => {
         );
       });
     } catch (err: any) {
-      setError(err.message);
+      toast.showError(err.message);
     }
   };
 
   const updateNoteBody = async (noteId: number, newBody: string) => {
-    setError(null);
-    
     try {
       const response = await fetch('api/notes/body', {
         method: 'PUT',
@@ -183,13 +176,11 @@ export const NotesContextProvider: ParentComponent = (props) => {
         );
       });
     } catch (err: any) {
-      setError(err.message);
+      toast.showError(err.message);
     }
   };
   
   const addNewSubitem = async (noteId: number, newText: string, checkBoxState: boolean) => { 
-    setError(null);
-    
     try {
       const response = await fetch(`api/notes/subitems`, {
         method: 'POST',
@@ -218,15 +209,12 @@ export const NotesContextProvider: ParentComponent = (props) => {
       });
       
     } catch (err: any) {
-      setError(err.message);
-      
+      toast.showError(err.message);
       throw new Error(err.message);
     }
   };
 
   const updateSubitemCheckbox = async (subitemId: number, isCurrentlyChecked: boolean) => {
-    setError(null);
-    
     try {
       const response = await fetch(`api/notes/subitems/checkbox/${subitemId}`, {
         method: 'PATCH',
@@ -252,15 +240,12 @@ export const NotesContextProvider: ParentComponent = (props) => {
         }));
       });
     } catch (err: any) {
-      setError(err.message);
-      
+      toast.showError(err.message);
       refetchNotes();
     }
   };
 
   const updateSubitemText = async (subitemId: number, newText: string) => {
-    setError(null);
-    
     try {
       const response = await fetch(`api/notes/subitems/text/${subitemId}`, {
         method: 'PATCH',
@@ -287,15 +272,12 @@ export const NotesContextProvider: ParentComponent = (props) => {
       });
       
     } catch (err: any) {
-      setError(err.message);
-      
+      toast.showError(err.message);
       refetchNotes();
     }
   };
 
   const deleteSubitem = async (subitemId: number) => {
-    setError(null);
-    
     try {
       const response = await fetch(`api/notes/subitems/${subitemId}`, {
         method: 'DELETE',
@@ -313,7 +295,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
         }));
       });
     } catch (err: any) {
-      setError(err.message);
+      toast.showError(err.message);
     }
   };
 
@@ -332,7 +314,6 @@ export const NotesContextProvider: ParentComponent = (props) => {
   };
       
   const updateNoteOrder = async (noteIds: number[]) => {
-    setError(null);
     if (!notesSwappedLocally()) {
       return;
     }
@@ -354,8 +335,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       setNotesSwappedLocally(false);
       
     } catch (err: any) {
-      setError(err.message);
-      
+      toast.showError(err.message);
       refetchNotes();
     }
   };
@@ -364,7 +344,6 @@ export const NotesContextProvider: ParentComponent = (props) => {
     <NotesContext.Provider value={{
       notes,
       orderedNoteIds,
-      error,
       addNewNote,
       deleteNote,
       updateNoteTitle,

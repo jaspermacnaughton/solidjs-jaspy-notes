@@ -2,6 +2,7 @@ import { Show, type Component } from 'solid-js';
 import { Router, Route, Navigate } from '@solidjs/router';
 
 import { AuthContextProvider, useAuth } from './context/AuthContext';
+import { ToastContextProvider } from './context/ToastContext';
 import Auth from './pages/Auth';
 import Notes from './pages/Notes/Notes';
 
@@ -32,9 +33,11 @@ const AppContent: Component = () => {
 
 const App: Component = () => {
   return (
-    <AuthContextProvider>
-      <AppContent />
-    </AuthContextProvider>
+    <ToastContextProvider>
+      <AuthContextProvider>
+        <AppContent />
+      </AuthContextProvider>
+    </ToastContextProvider>
   );
 };
 

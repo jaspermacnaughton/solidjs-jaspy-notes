@@ -12,7 +12,7 @@ const NotesContent = () => {
   const auth = useAuth();
   const navigate = useNavigate();
   const [activeDraggingNote, setActiveDraggingNote] = createSignal<Note | null>(null);
-  const { notes, orderedNoteIds, error, swapNotesLocally, updateNoteOrder } = useNotes();
+  const { notes, orderedNoteIds, swapNotesLocally, updateNoteOrder } = useNotes();
   
   // Add authentication check effect to rerun whenever the auth signals change
   createEffect(() => {
@@ -72,12 +72,6 @@ const NotesContent = () => {
           </div>
         </div>
       </header>
-      
-      <Show when={error()}>
-        <div class="text-red-500 bg-red-200 px-4 py-2 mb-2 rounded">
-          Error: {error()}
-        </div>
-      </Show>
       
       <main class="flex-1">
         <Show
