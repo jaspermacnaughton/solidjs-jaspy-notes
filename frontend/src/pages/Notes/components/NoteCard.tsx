@@ -130,11 +130,11 @@ const NoteCard: Component<NoteCardProps> = (props) => {
           </h2>
         )}
         <Show when={props.sortable} fallback={
-          <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-sm align-middle">
+          <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-sm align-middle touch-none">
             drag_indicator
           </span>
         }>
-          <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-sm align-middle" {...props.sortable.dragActivators}>
+          <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-sm align-middle touch-none" {...props.sortable.dragActivators}>
             drag_indicator
           </span>
         </Show>

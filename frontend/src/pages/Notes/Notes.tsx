@@ -93,7 +93,6 @@ const NotesContent = () => {
                       return (
                         <div
                           ref={sortable.ref}
-                          class="touch-none"
                           classList={{ "opacity-25": sortable.isActiveDraggable }}
                         >
                           <NoteCard note={note} sortable={sortable} />
