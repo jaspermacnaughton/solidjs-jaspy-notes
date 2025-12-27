@@ -93,10 +93,17 @@ const NoteCard: Component<NoteCardProps> = (props) => {
   return (
     <div class="bg-white p-2 mx-auto sm:mx-0 mb-0 m-4 text-center rounded-md shadow-md flex flex-col min-h-[150px] w-[95%] sm:w-full">
       <div class="flex items-center justify-between w-full mb-1">
-        <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-          onClick={() => deleteNote(props.note.noteId)}>
-          delete
-        </span>
+        <div class="flex items-center gap-1">
+          <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+            onClick={() => deleteNote(props.note.noteId)}>
+            delete
+          </span>
+          <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+            onClick={onShareNote}
+            title="Copy note to clipboard">
+            content_copy
+          </button>
+        </div>
         {isEditingTitle() ? (
           <div class="flex-grow flex items-center">
             <input
@@ -166,12 +173,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
               <>{/* Viewing note display*/}
                 <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">{props.note.body}</p>
                 
-                <div class="flex items-center justify-end w-full mt-2 gap-2">
-                  <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-                    onClick={onShareNote}
-                    title="Share note">
-                    content_copy
-                  </button>
+                <div class="flex items-center justify-end w-full mt-2">
                   <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
                     onClick={() => setIsEditingBody(true)}>
                     edit
@@ -181,40 +183,30 @@ const NoteCard: Component<NoteCardProps> = (props) => {
             )}
           </>
         ) : (
-          <>
-            <div class="flex flex-col gap-2 mt-2 flex-grow">
-              <For each={props.note.subitems}>
-                {(subitem) => (
-                  <Subitem
-                    subitem={subitem}
-                    isBlankNewSubitem={false}
-                    isInDragHover={props.sortable !== undefined}
-                    onFocusOut={onExistingSubitemTextUpdated}
-                    onCheckboxToggled={onSubitemCheckboxToggled}
-                    onDelete={onSubitemDelete}
-                  />
-                )}
-              </For>
-              
-              {/* Blank placeholder new subitem */}
-              <Subitem
-                subitem={blankNewSubitem()}
-                isBlankNewSubitem={true}
-                isInDragHover={props.sortable !== undefined}
-                onFocusOut={onNewSubitemTextAdded}
-                onCheckboxToggled={onSubitemCheckboxToggled}
-                onDelete={() => {}}
-              />
-            </div>
+          <div class="flex flex-col gap-2 mt-2">
+            <For each={props.note.subitems}>
+              {(subitem) => (
+                <Subitem
+                  subitem={subitem}
+                  isBlankNewSubitem={false}
+                  isInDragHover={props.sortable !== undefined}
+                  onFocusOut={onExistingSubitemTextUpdated}
+                  onCheckboxToggled={onSubitemCheckboxToggled}
+                  onDelete={onSubitemDelete}
+                />
+              )}
+            </For>
             
-            <div class="flex items-center justify-end w-full mt-2">
-              <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
-                onClick={onShareNote}
-                title="Share note">
-                content_copy
-              </button>
-            </div>
-          </>
+            {/* Blank placeholder new subitem */}
+            <Subitem
+              subitem={blankNewSubitem()}
+              isBlankNewSubitem={true}
+              isInDragHover={props.sortable !== undefined}
+              onFocusOut={onNewSubitemTextAdded}
+              onCheckboxToggled={onSubitemCheckboxToggled}
+              onDelete={() => {}}
+            />
+          </div>
         )}
       </div>
     </div>
