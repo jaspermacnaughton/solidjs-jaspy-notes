@@ -1,6 +1,7 @@
 import { createSignal, type Component, For, Show } from 'solid-js';
 
 import { useNotes } from '../../../context/NotesContext';
+import { useToast } from '../../../context/ToastContext';
 import { Note, SubitemType } from '../../../types/notes';
 import Subitem from './Subitem';
 
@@ -11,6 +12,7 @@ type NoteCardProps = {
 
 const NoteCard: Component<NoteCardProps> = (props) => {
   const { deleteNote, updateNoteTitle, updateNoteBody, addNewSubitem, updateSubitemCheckbox, updateSubitemText, deleteSubitem } = useNotes();
+  const { showSuccess, showError } = useToast();
   const [isEditingTitle, setIsEditingTitle] = createSignal(false);
   const [currentTitle, setCurrentTitle] = createSignal(props.note.title);
   const [isEditingBody, setIsEditingBody] = createSignal(false);
@@ -63,6 +65,28 @@ const NoteCard: Component<NoteCardProps> = (props) => {
   const onSubitemDelete = async (subitem: SubitemType) => {
     if (subitem.subitemId) {
       await deleteSubitem(subitem.subitemId);
+    }
+  };
+
+  const onShareNote = async () => {
+    try {
+      let textToCopy = `${props.note.title}\n\n`;
+      
+      if (props.note.noteType === 'freetext') {
+        textToCopy += props.note.body;
+      } else {
+        // Format subitems as a checklist
+        props.note.subitems.forEach((subitem) => {
+          const checkbox = subitem.isChecked ? '[x]' : '[ ]';
+          textToCopy += `${checkbox} ${subitem.text}\n`;
+        });
+      }
+      
+      await navigator.clipboard.writeText(textToCopy);
+      showSuccess('Note copied to clipboard!');
+    } catch (error) {
+      showError('Failed to copy note to clipboard');
+      console.error('Failed to copy to clipboard:', error);
     }
   };
 
@@ -142,7 +166,12 @@ const NoteCard: Component<NoteCardProps> = (props) => {
               <>{/* Viewing note display*/}
                 <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">{props.note.body}</p>
                 
-                <div class="flex items-center justify-end w-full mt-2">
+                <div class="flex items-center justify-end w-full mt-2 gap-2">
+                  <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+                    onClick={onShareNote}
+                    title="Share note">
+                    content_copy
+                  </button>
                   <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
                     onClick={() => setIsEditingBody(true)}>
                     edit
@@ -152,30 +181,40 @@ const NoteCard: Component<NoteCardProps> = (props) => {
             )}
           </>
         ) : (
-          <div class="flex flex-col gap-2 mt-2">
-            <For each={props.note.subitems}>
-              {(subitem) => (
-                <Subitem
-                  subitem={subitem}
-                  isBlankNewSubitem={false}
-                  isInDragHover={props.sortable !== undefined}
-                  onFocusOut={onExistingSubitemTextUpdated}
-                  onCheckboxToggled={onSubitemCheckboxToggled}
-                  onDelete={onSubitemDelete}
-                />
-              )}
-            </For>
+          <>
+            <div class="flex flex-col gap-2 mt-2 flex-grow">
+              <For each={props.note.subitems}>
+                {(subitem) => (
+                  <Subitem
+                    subitem={subitem}
+                    isBlankNewSubitem={false}
+                    isInDragHover={props.sortable !== undefined}
+                    onFocusOut={onExistingSubitemTextUpdated}
+                    onCheckboxToggled={onSubitemCheckboxToggled}
+                    onDelete={onSubitemDelete}
+                  />
+                )}
+              </For>
+              
+              {/* Blank placeholder new subitem */}
+              <Subitem
+                subitem={blankNewSubitem()}
+                isBlankNewSubitem={true}
+                isInDragHover={props.sortable !== undefined}
+                onFocusOut={onNewSubitemTextAdded}
+                onCheckboxToggled={onSubitemCheckboxToggled}
+                onDelete={() => {}}
+              />
+            </div>
             
-            {/* Blank placeholder new subitem */}
-            <Subitem
-              subitem={blankNewSubitem()}
-              isBlankNewSubitem={true}
-              isInDragHover={props.sortable !== undefined}
-              onFocusOut={onNewSubitemTextAdded}
-              onCheckboxToggled={onSubitemCheckboxToggled}
-              onDelete={() => {}}
-            />
-          </div>
+            <div class="flex items-center justify-end w-full mt-2">
+              <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+                onClick={onShareNote}
+                title="Share note">
+                content_copy
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>
