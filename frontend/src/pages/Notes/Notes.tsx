@@ -7,6 +7,7 @@ import { useNotes, NotesContextProvider } from "../../context/NotesContext";
 import { Note } from '../../types/notes';
 import NoteCard from "./components/NoteCard";
 import NewNote from "./components/NewNote";
+import SoundToggle from "../../components/SoundToggle";
 
 const NotesContent = () => {
   const auth = useAuth();
@@ -65,6 +66,7 @@ const NotesContent = () => {
           <h1 class="text-2xl sm:text-3xl">Jaspy Notes</h1>
           
           <div class="flex items-center gap-2">
+            <SoundToggle />
             <span class="text-sm sm:text-base">Welcome, {auth.username()}</span>
             <button onClick={handleLogout} class="btn text-sm sm:text-base">
               Logout

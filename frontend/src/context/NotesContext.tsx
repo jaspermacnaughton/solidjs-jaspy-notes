@@ -2,6 +2,7 @@ import { createContext, useContext, createResource, createSignal, ParentComponen
 import { Note } from '../types/notes';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
+import { useSound } from './SoundContext';
 import { handleApiResponse } from '../utils/api';
 
 interface NotesContextType {
@@ -24,6 +25,7 @@ const NotesContext = createContext<NotesContextType>();
 export const NotesContextProvider: ParentComponent = (props) => {
   const auth = useAuth();
   const toast = useToast();
+  const sound = useSound();
   const [notesSwappedLocally, setNotesSwappedLocally] = createSignal<boolean>(false);
   
   const fetchNotes = async () => {
@@ -77,6 +79,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       const data = await handleApiResponse(response, auth.logout);
       
       mutateNotes((existingNotes = []) => [...existingNotes, {noteId: data.noteId, ...newNoteWithDisplayOrder}]);
+      sound.playSound('addNote');
       toast.showSuccess("Note created successfully");
       
     } catch (err: any) {
@@ -112,7 +115,8 @@ export const NotesContextProvider: ParentComponent = (props) => {
           displayOrder: index
         }));
       });
-      
+      sound.playSound('deleteNote');
+
     } catch (err: any) {
       toast.showError(err.message);
     }
@@ -198,7 +202,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       const data = await handleApiResponse(response, auth.logout);
       
       mutateNotes((existingNotes = []) => {
-        return existingNotes.map((note: Note) => 
+        return existingNotes.map((note: Note) =>
           note.noteId === noteId
             ? {
                 ...note,
@@ -207,7 +211,8 @@ export const NotesContextProvider: ParentComponent = (props) => {
             : note
         );
       });
-      
+      sound.playSound('addSubitem');
+
     } catch (err: any) {
       toast.showError(err.message);
       throw new Error(err.message);
@@ -232,13 +237,15 @@ export const NotesContextProvider: ParentComponent = (props) => {
       mutateNotes((existingNotes = []) => {
         return existingNotes.map((note: Note) => ({
           ...note,
-          subitems: note.subitems.map(subitem => 
-            subitem.subitemId === subitemId 
+          subitems: note.subitems.map(subitem =>
+            subitem.subitemId === subitemId
               ? { ...subitem, isChecked: !isCurrentlyChecked }
               : subitem
           )
         }));
       });
+      // Play different sound based on whether we're checking or unchecking
+      sound.playSound(isCurrentlyChecked ? 'uncheckSubitem' : 'checkSubitem');
     } catch (err: any) {
       toast.showError(err.message);
       refetchNotes();

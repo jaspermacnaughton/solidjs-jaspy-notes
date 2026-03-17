@@ -3,6 +3,7 @@ import { Router, Route, Navigate } from '@solidjs/router';
 
 import { AuthContextProvider, useAuth } from './context/AuthContext';
 import { ToastContextProvider } from './context/ToastContext';
+import { SoundContextProvider } from './context/SoundContext';
 import Auth from './pages/Auth';
 import Notes from './pages/Notes/Notes';
 
@@ -34,9 +35,11 @@ const AppContent: Component = () => {
 const App: Component = () => {
   return (
     <ToastContextProvider>
-      <AuthContextProvider>
-        <AppContent />
-      </AuthContextProvider>
+      <SoundContextProvider>
+        <AuthContextProvider>
+          <AppContent />
+        </AuthContextProvider>
+      </SoundContextProvider>
     </ToastContextProvider>
   );
 };
