@@ -18,10 +18,8 @@ export default function Auth() {
     try {
       if (isLogin()) {
         await auth.login(username(), password());
-        toast.showSuccess("Successfully logged in!");
       } else {
         await auth.register(username(), password());
-        toast.showSuccess("Account created successfully!");
       }
       navigate("/");
     } catch (err: any) {

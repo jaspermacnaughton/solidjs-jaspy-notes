@@ -80,7 +80,6 @@ export const NotesContextProvider: ParentComponent = (props) => {
       
       mutateNotes((existingNotes = []) => [...existingNotes, {noteId: data.noteId, ...newNoteWithDisplayOrder}]);
       sound.playSound('addNote');
-      toast.showSuccess("Note created successfully");
       
     } catch (err: any) {
       toast.showError(err.message);
