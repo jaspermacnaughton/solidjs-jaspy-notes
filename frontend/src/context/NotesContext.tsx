@@ -3,7 +3,7 @@ import { Note } from '../types/notes';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { useSound } from './SoundContext';
-import { handleApiResponse } from '../utils/api';
+import { handleApiResponse, AuthExpiredError } from '../utils/api';
 
 interface NotesContextType {
   notes: Resource<Note[]>;
@@ -44,7 +44,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
   const [notes, { mutate: mutateNotes, refetch: refetchNotes }] = createResource<Note[], string>(
     () => auth.token(),
     () => fetchNotes().catch(err => {
-      toast.showError(err.message);
+      if (!(err instanceof AuthExpiredError)) toast.showError(err.message);
       throw err;
     }),
     {
@@ -82,10 +82,10 @@ export const NotesContextProvider: ParentComponent = (props) => {
       sound.playSound('addNote');
       
     } catch (err: any) {
-      toast.showError(err.message);
+      if (!(err instanceof AuthExpiredError)) toast.showError(err.message);
     }
   };
-  
+
   const deleteNote = async (idTodelete: number) => {
     try {
       const response = await fetch('api/notes', {
@@ -117,7 +117,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       sound.playSound('deleteNote');
 
     } catch (err: any) {
-      toast.showError(err.message);
+      if (!(err instanceof AuthExpiredError)) toast.showError(err.message);
     }
   };
 
@@ -148,7 +148,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
         );
       });
     } catch (err: any) {
-      toast.showError(err.message);
+      if (!(err instanceof AuthExpiredError)) toast.showError(err.message);
     }
   };
 
@@ -179,10 +179,10 @@ export const NotesContextProvider: ParentComponent = (props) => {
         );
       });
     } catch (err: any) {
-      toast.showError(err.message);
+      if (!(err instanceof AuthExpiredError)) toast.showError(err.message);
     }
   };
-  
+
   const addNewSubitem = async (noteId: number, newText: string, checkBoxState: boolean) => { 
     try {
       const response = await fetch(`api/notes/subitems`, {
@@ -213,7 +213,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       sound.playSound('addSubitem');
 
     } catch (err: any) {
-      toast.showError(err.message);
+      if (!(err instanceof AuthExpiredError)) toast.showError(err.message);
       throw new Error(err.message);
     }
   };
@@ -246,7 +246,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       // Play different sound based on whether we're checking or unchecking
       sound.playSound(isCurrentlyChecked ? 'uncheckSubitem' : 'checkSubitem');
     } catch (err: any) {
-      toast.showError(err.message);
+      if (!(err instanceof AuthExpiredError)) toast.showError(err.message);
       refetchNotes();
     }
   };
@@ -278,7 +278,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       });
       
     } catch (err: any) {
-      toast.showError(err.message);
+      if (!(err instanceof AuthExpiredError)) toast.showError(err.message);
       refetchNotes();
     }
   };
@@ -301,7 +301,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
         }));
       });
     } catch (err: any) {
-      toast.showError(err.message);
+      if (!(err instanceof AuthExpiredError)) toast.showError(err.message);
     }
   };
 
@@ -341,7 +341,7 @@ export const NotesContextProvider: ParentComponent = (props) => {
       setNotesSwappedLocally(false);
       
     } catch (err: any) {
-      toast.showError(err.message);
+      if (!(err instanceof AuthExpiredError)) toast.showError(err.message);
       refetchNotes();
     }
   };
