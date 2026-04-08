@@ -1,0 +1,15 @@
+[Unit]
+Description=SolidJS Jaspy Notes App
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/solidjs-jaspy-notes
+ExecStart=/home/ubuntu/.bun/bin/bun server/index.ts
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=myapp
+
+[Install]
+WantedBy=multi-user.target
