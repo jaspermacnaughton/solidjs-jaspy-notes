@@ -53,7 +53,7 @@ export default function Auth() {
                 type="text"
                 required
                 autocomplete="username"
-                class="block w-full rounded-md border-0 py-1.5 px-2 shadow-xs ring-1 ring-inset ring-gray-300"
+                class="block w-full bg-white rounded-md border-0 py-1.5 px-2 shadow-xs ring-1 ring-inset ring-gray-300"
                 value={username()}
                 onInput={(e) => setUsername(e.currentTarget.value)}
               />
@@ -67,7 +67,7 @@ export default function Auth() {
                 type="password"
                 autocomplete={isLogin() ? "current-password" : "new-password"}
                 required
-                class="block w-full rounded-md border-0 py-1.5 px-2 shadow-xs ring-1 ring-inset ring-gray-300"
+                class="block w-full bg-white rounded-md border-0 py-1.5 px-2 shadow-xs ring-1 ring-inset ring-gray-300"
                 value={password()}
                 onInput={(e) => setPassword(e.currentTarget.value)}
               />

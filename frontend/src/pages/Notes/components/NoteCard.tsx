@@ -109,7 +109,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
             <input
               id={`note-${props.note.noteId}-title`}
               type="text"
-              class="w-full border border-gray-300 rounded-md p-1 text-center font-bold h-[1.5em]"
+              class="w-full bg-white border border-gray-300 rounded-md p-1 text-center font-bold h-[1.5em]"
               value={currentTitle()}
               onInput={(e) => setCurrentTitle(e.currentTarget.value)}
               onKeyDown={(e) => {
