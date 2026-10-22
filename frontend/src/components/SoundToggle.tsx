@@ -5,7 +5,7 @@ export default function SoundToggle() {
 
   return (
     <span
-      class="material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm"
+      class="material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-xs"
       onClick={() => sound.toggleMute()}
       title={sound.isMuted() ? 'Unmute sounds' : 'Mute sounds'}
     >

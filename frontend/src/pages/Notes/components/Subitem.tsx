@@ -29,7 +29,7 @@ const Subitem: Component<SubitemProps> = (props) => {
       
       <textarea 
         id={textId}
-        class={`flex-grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none ${
+        class={`grow whitespace-pre-wrap text-left bg-gray-50 border border-gray-300 rounded-md p-1 resize-none ${
           props.subitem.isChecked ? 'line-through text-gray-500' : ''
         }`}
         value={props.subitem.text}
@@ -40,7 +40,7 @@ const Subitem: Component<SubitemProps> = (props) => {
       />
       
       <Show when={!props.isBlankNewSubitem}>
-        <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm mr-1 align-middle"
+        <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-xs mr-1 align-middle"
           onClick={() => props.onDelete(props.subitem)}
         >
           delete

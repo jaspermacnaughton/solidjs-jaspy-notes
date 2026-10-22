@@ -91,8 +91,8 @@ export default function NewNote() {
       <div class="bg-white rounded-md shadow-md sm:float-right min-w-80 w-[95%] sm:w-1/4 flex flex-col mb-6 sm:mb-4 mx-auto sm:mx-0">
         <div class="flex items-center justify-between w-full">
           <div class="w-6"></div>
-          <h3 class="flex-grow text-center m-2 text-xl"><b>New Note</b></h3>
-          <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm mr-2"
+          <h3 class="grow text-center m-2 text-xl"><b>New Note</b></h3>
+          <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-xs mr-2"
             onClick={() => setIsNewNoteModalOpen(false)}>
               cancel
           </span>
@@ -121,7 +121,7 @@ export default function NewNote() {
               Free Text
             </button>
             <button
-              class={`flex-1 px-4 py-2 text-sm transition-colors border-l ${
+              class={`flex-1 px-4 py-2 text-sm transition-colors border-l border-gray-200 ${
                 noteType() === 'subitems'
                   ? 'bg-gray-100 text-gray-900'
                   : 'bg-white text-gray-500 hover:bg-gray-50'
