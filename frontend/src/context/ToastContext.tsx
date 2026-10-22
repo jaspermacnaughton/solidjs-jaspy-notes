@@ -96,7 +96,7 @@ export const ToastContextProvider: ParentComponent = (props) => {
               </span>
               <span class="flex-1">{toast.message}</span>
               <button
-                class="material-symbols-outlined hover:bg-black hover:bg-opacity-20 rounded cursor-pointer p-1"
+                class="material-symbols-outlined hover:bg-black/20 rounded-sm cursor-pointer p-1"
                 onClick={() => removeToast(toast.id)}
               >
                 close

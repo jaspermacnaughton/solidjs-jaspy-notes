@@ -94,18 +94,18 @@ const NoteCard: Component<NoteCardProps> = (props) => {
     <div class="bg-white p-2 mx-auto sm:mx-0 mb-0 m-4 text-center rounded-md shadow-md flex flex-col min-h-[150px] w-[95%] sm:w-full">
       <div class="flex items-center justify-between w-full mb-1">
         <div class="flex items-center gap-1">
-          <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+          <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-xs align-middle"
             onClick={() => deleteNote(props.note.noteId)}>
             delete
           </span>
-          <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+          <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-xs align-middle"
             onClick={onShareNote}
             title="Copy note to clipboard">
             content_copy
           </button>
         </div>
         {isEditingTitle() ? (
-          <div class="flex-grow flex items-center">
+          <div class="grow flex items-center">
             <input
               id={`note-${props.note.noteId}-title`}
               type="text"
@@ -125,16 +125,16 @@ const NoteCard: Component<NoteCardProps> = (props) => {
             />
           </div>
         ) : (
-          <h2 class="flex-grow cursor-pointer hover:bg-gray-100 rounded px-1" onClick={() => setIsEditingTitle(true)}>
+          <h2 class="grow cursor-pointer hover:bg-gray-100 rounded-sm px-1" onClick={() => setIsEditingTitle(true)}>
             <b>{props.note.title}</b>
           </h2>
         )}
         <Show when={props.sortable} fallback={
-          <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-sm align-middle touch-none">
+          <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-xs align-middle touch-none">
             drag_indicator
           </span>
         }>
-          <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-sm align-middle touch-none" {...props.sortable.dragActivators}>
+          <span class="w-6 material-symbols-outlined cursor-grab hover:bg-neutral-100 rounded-xs align-middle touch-none" {...props.sortable.dragActivators}>
             drag_indicator
           </span>
         </Show>
@@ -142,7 +142,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
       
       <hr class="mb-2" />
       
-      <div class="flex flex-col flex-grow">
+      <div class="flex flex-col grow">
         {props.note.noteType === 'freetext' ? (
           <>
             {isEditingBody() ? (
@@ -156,14 +156,14 @@ const NoteCard: Component<NoteCardProps> = (props) => {
               />
               
               <div class="flex items-center justify-between w-full mt-2">
-                <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+                <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-xs align-middle"
                   onClick={() => {
                     setCurrentBody(props.note.body);
                     setIsEditingBody(false);
                   }}>
                   cancel
                 </button>
-                <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+                <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-xs align-middle"
                   onClick={onSaveBody}>
                   save
                 </button>
@@ -171,10 +171,10 @@ const NoteCard: Component<NoteCardProps> = (props) => {
             </>
             ) : (
               <>{/* Viewing note display*/}
-                <p class="flex-grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">{props.note.body}</p>
+                <p class="grow whitespace-pre-wrap text-left border border-transparent rounded-md p-1">{props.note.body}</p>
                 
                 <div class="flex items-center justify-end w-full mt-2">
-                  <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-sm align-middle"
+                  <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-xs align-middle"
                     onClick={() => setIsEditingBody(true)}>
                     edit
                   </button>
