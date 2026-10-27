@@ -27,6 +27,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
   };
   
   const onSaveBody = async () => {
+    sound.playSound('saveNote');
     await updateNoteBody(props.note.noteId, currentBody());
     setIsEditingBody(false);
   };
@@ -161,6 +162,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
               <div class="flex items-center justify-between w-full mt-2">
                 <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-xs align-middle"
                   onClick={() => {
+                    sound.playSound('cancelEditNote');
                     setCurrentBody(props.note.body);
                     setIsEditingBody(false);
                   }}>
@@ -178,7 +180,10 @@ const NoteCard: Component<NoteCardProps> = (props) => {
                 
                 <div class="flex items-center justify-end w-full mt-2">
                   <button class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-xs align-middle"
-                    onClick={() => setIsEditingBody(true)}>
+                    onClick={() => {
+                      sound.playSound('editNote');
+                      setIsEditingBody(true);
+                    }}>
                     edit
                   </button>
                 </div>
