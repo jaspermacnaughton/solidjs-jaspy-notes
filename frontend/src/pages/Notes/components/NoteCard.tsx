@@ -94,7 +94,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
   };
 
   return (
-    <div class="bg-white p-2 mx-auto sm:mx-0 mb-0 m-4 text-center rounded-md shadow-md flex flex-col min-h-[150px] w-[95%] sm:w-full">
+    <div class="bg-white p-2 mx-auto sm:mx-0 mb-0 m-4 text-center rounded-md shadow-md flex flex-col min-h-37.5 w-[95%] sm:w-full">
       <div class="flex items-center justify-between w-full mb-1">
         <div class="flex items-center gap-1">
           <span class="w-6 material-symbols-outlined hover:bg-neutral-800 hover:text-white cursor-pointer rounded-xs align-middle"
