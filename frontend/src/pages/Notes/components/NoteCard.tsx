@@ -1,6 +1,7 @@
 import { createSignal, type Component, For, Show } from 'solid-js';
 
 import { useNotes } from '../../../context/NotesContext';
+import { useSound } from '../../../context/SoundContext';
 import { useToast } from '../../../context/ToastContext';
 import { Note, SubitemType } from '../../../types/notes';
 import Subitem from './Subitem';
@@ -13,6 +14,7 @@ type NoteCardProps = {
 const NoteCard: Component<NoteCardProps> = (props) => {
   const { deleteNote, updateNoteTitle, updateNoteBody, addNewSubitem, updateSubitemCheckbox, updateSubitemText, deleteSubitem } = useNotes();
   const { showSuccess, showError } = useToast();
+  const sound = useSound();
   const [isEditingTitle, setIsEditingTitle] = createSignal(false);
   const [currentTitle, setCurrentTitle] = createSignal(props.note.title);
   const [isEditingBody, setIsEditingBody] = createSignal(false);
@@ -59,6 +61,7 @@ const NoteCard: Component<NoteCardProps> = (props) => {
       
     } else {
       setBlankNewSubitem({ text: "", isChecked: !subitem.isChecked, noteId: props.note.noteId });
+      sound.playSound(subitem.isChecked ? 'uncheckSubitem' : 'checkSubitem');
     }
   };
 
