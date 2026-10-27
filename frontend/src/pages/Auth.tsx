@@ -3,6 +3,7 @@ import { useNavigate } from "@solidjs/router";
 
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useSound } from "../context/SoundContext";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = createSignal(true);
@@ -10,6 +11,7 @@ export default function Auth() {
   const [password, setPassword] = createSignal("");
   const auth = useAuth();
   const toast = useToast();
+  const sound = useSound();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: Event) => {
@@ -21,6 +23,7 @@ export default function Auth() {
       } else {
         await auth.register(username(), password());
       }
+      sound.playSound('welcome');
       navigate("/");
     } catch (err: any) {
       toast.showError(err.message);

@@ -1,5 +1,5 @@
 // Sound types for different user actions
-export type SoundType = 'addNote' | 'deleteNote' | 'addSubitem' | 'checkSubitem' | 'uncheckSubitem';
+export type SoundType = 'addNote' | 'deleteNote' | 'addSubitem' | 'checkSubitem' | 'uncheckSubitem' | 'welcome';
 
 // Import audio files using Vite's import system
 // Vite will hash these and return URLs at build time
@@ -8,6 +8,7 @@ import deleteNoteSound from '../assets/audio/bye-bye.mp3';
 import addSubitemSound from '../assets/audio/cheek-pop.mp3';
 import checkSubitemSound from '../assets/audio/clickity.mp3';
 import uncheckSubitemSound from '../assets/audio/clackity.mp3';
+import welcomeSound from '../assets/audio/welcome-to-jaspy-notes.mp3';
 
 // Map of sound types to Audio objects
 const audioMap = new Map<SoundType, HTMLAudioElement | null>();
@@ -20,6 +21,7 @@ function initializeSounds() {
     ['addSubitem', addSubitemSound],
     ['checkSubitem', checkSubitemSound],
     ['uncheckSubitem', uncheckSubitemSound],
+    ['welcome', welcomeSound],
   ];
 
   soundFiles.forEach(([soundType, soundUrl]) => {
